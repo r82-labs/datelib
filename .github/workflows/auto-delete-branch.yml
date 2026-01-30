@@ -7,6 +7,10 @@ on:
 permissions:
   contents: write
 
+env:
+  # Branch prefixes that should NOT be auto-deleted
+  PROTECTED_PREFIXES: 'main,master,develop,release/,hotfix/'
+
 jobs:
   delete-branch:
     # Only run if the PR was merged (not just closed)
@@ -19,11 +23,12 @@ jobs:
         with:
           script: |
             const branchName = context.payload.pull_request.head.ref;
-            const isFromFork = context.payload.pull_request.head.repo.fork;
+            const headRepo = context.payload.pull_request.head.repo;
+            const isFromFork = headRepo?.fork || false;
             
             // Skip if the branch is from a fork (we can't delete it)
-            if (isFromFork) {
-              console.log(`Branch '${branchName}' is from a fork. Skipping deletion.`);
+            if (isFromFork || !headRepo) {
+              console.log(`Branch '${branchName}' is from a fork or deleted fork. Skipping deletion.`);
               return;
             }
             
@@ -35,7 +40,7 @@ jobs:
             }
             
             // Protected branch prefixes that should not be auto-deleted
-            const protectedPrefixes = ['main', 'master', 'develop', 'release/', 'hotfix/'];
+            const protectedPrefixes = process.env.PROTECTED_PREFIXES.split(',').map(p => p.trim());
             const isProtected = protectedPrefixes.some(prefix => branchName.startsWith(prefix));
             
             if (isProtected) {
