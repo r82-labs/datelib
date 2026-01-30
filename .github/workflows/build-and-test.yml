@@ -38,7 +38,7 @@ jobs:
       with:
         name: build-artifacts
         path: build/
-        retention-days: 1
+        retention-days: 2
 
   test:
     runs-on: ubuntu-latest
@@ -57,7 +57,8 @@ jobs:
     - name: Run tests
       run: |
         cd build
-        chmod +x tests/datelib_tests
+        # Make test executables executable (artifacts may lose permissions)
+        chmod -R +x tests/ 2>/dev/null || true
         ctest --output-on-failure --verbose
 
   coverage:
