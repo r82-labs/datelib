@@ -6,6 +6,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Coverage option (enabled via -DENABLE_COVERAGE=ON)
+option(ENABLE_COVERAGE "Enable coverage reporting" OFF)
+
 # Library source files
 add_library(datelib SHARED
     src/date.cpp
@@ -16,6 +19,12 @@ target_compile_options(datelib PRIVATE
     $<$<CXX_COMPILER_ID:GNU,Clang>:-Wall -Wextra -Wpedantic -Werror>
     $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
 )
+
+# Coverage flags
+if(ENABLE_COVERAGE)
+    target_compile_options(datelib PRIVATE --coverage)
+    target_link_options(datelib PRIVATE --coverage)
+endif()
 
 # Include directories
 target_include_directories(datelib PUBLIC

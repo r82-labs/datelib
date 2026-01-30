@@ -20,13 +20,13 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y cmake g++ build-essential
+        sudo apt-get install -y cmake g++ build-essential lcov
     
     - name: Configure CMake
       run: |
         mkdir -p build
         cd build
-        cmake ..
+        cmake -DENABLE_COVERAGE=ON ..
     
     - name: Build
       run: |
@@ -37,3 +37,30 @@ jobs:
       run: |
         cd build
         ctest --output-on-failure --verbose
+    
+    - name: Generate coverage report
+      run: |
+        cd build
+        # Capture coverage data
+        lcov --capture --directory . --output-file coverage.info
+        
+        # Remove system headers, test files, and Catch2 from coverage
+        lcov --remove coverage.info '/usr/*' '*/tests/*' '*/_deps/*' --output-file coverage_filtered.info --ignore-errors unused
+        
+        # Generate summary
+        lcov --list coverage_filtered.info
+    
+    - name: Check coverage threshold
+      run: |
+        cd build
+        # Extract coverage percentage
+        COVERAGE=$(lcov --summary coverage_filtered.info 2>&1 | grep "lines" | awk '{print $2}' | sed 's/%//')
+        echo "Coverage: $COVERAGE%"
+        
+        # Check if coverage is 100%
+        if (( $(echo "$COVERAGE < 100" | bc -l) )); then
+          echo "ERROR: Coverage is $COVERAGE%, which is below the required 100%"
+          exit 1
+        fi
+        
+        echo "SUCCESS: Coverage is $COVERAGE%, meeting the 100% requirement"
