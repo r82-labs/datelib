@@ -9,3 +9,7 @@ This repository uses GitHub Copilot custom agents to assist with development. Se
 - Current limitations and workarounds
 
 For project-wide agent instructions, see [`AGENTS.md`](AGENTS.md).
+
+## GitHub Actions Notifications
+
+To learn how to stop receiving email notifications from GitHub Actions workflows, see [`.github/NOTIFICATIONS.md`](.github/NOTIFICATIONS.md).
