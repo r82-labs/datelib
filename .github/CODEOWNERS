@@ -1,0 +1,7 @@
+# CODEOWNERS file
+# This file defines individuals or teams that are responsible for code in this repository.
+# When enabled with branch protection rules, code owners are automatically requested for review.
+
+# Default owners for everything in the repo
+# At least 1 review from code owners is required before merging to main
+* @r82labs-ronan
