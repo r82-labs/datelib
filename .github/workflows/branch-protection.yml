@@ -9,6 +9,8 @@ jobs:
   validate-pr:
     runs-on: ubuntu-latest
     name: Validate PR Requirements
+    permissions:
+      pull-requests: read
     
     steps:
       - name: Check PR has at least one review
