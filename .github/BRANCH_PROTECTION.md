@@ -63,9 +63,22 @@ When branch protection is configured with both:
 
 GitHub requires at least 1 approval from someone **other than the PR author**. This is an intentional security feature to prevent authors from merging their own code without independent review.
 
+**Important**: If the PR is created by an automated agent (like GitHub Copilot or a bot), and you are listed as a code owner, you **can** approve the PR because you are not the PR author. The restriction only applies when the same person is both the PR author and the approver.
+
 ### For Solo Maintainers
 
-If you are the sole maintainer of this repository (@r82labs-ronan), you have several options:
+#### If PRs are Created by Automated Agents (GitHub Copilot, Bots)
+
+If your PRs are created by GitHub Copilot, Dependabot, or other automated agents, **you can approve and merge them directly** as a code owner. The approval requirement is satisfied because:
+- The PR author is the automated agent (e.g., `github-actions[bot]` or Copilot)
+- You are the code owner providing the review
+- GitHub treats these as two different entities
+
+Simply approve the PR and merge it - no configuration changes needed.
+
+#### If You Create PRs Manually
+
+If you are the sole maintainer creating your own PRs manually (@r82labs-ronan), you have several options:
 
 #### Option 1: Temporarily Disable CODEOWNERS Review (Recommended for Solo Projects)
 1. Go to **Settings** → **Branches** → **Branch protection rules** for `main`
@@ -83,11 +96,27 @@ If you are the sole maintainer of this repository (@r82labs-ronan), you have sev
 
 ### Troubleshooting: "Still needs 1 approver" Message
 
+#### Scenario 1: PR created by an automated agent
+
+**Symptom**: After approving a PR created by GitHub Copilot or a bot, GitHub still shows "This pull request is blocked: 1 approving review required."
+
+**Likely Causes**:
+1. Your GitHub account is not listed in the CODEOWNERS file
+2. The branch protection rule requires additional status checks that haven't passed yet
+3. You need to explicitly click the "Approve" button in the review section (not just comment)
+
+**Solution**: 
+1. Verify you're listed in `.github/CODEOWNERS`
+2. Ensure all required status checks (tests, builds) have passed
+3. Click "Review changes" → "Approve" → "Submit review" in the PR's "Files changed" tab
+
+#### Scenario 2: PR created by you manually
+
 **Symptom**: After approving your own PR, GitHub still shows "This pull request is blocked: 1 approving review required."
 
 **Cause**: You are the PR author and also the only code owner. GitHub does not count your approval.
 
-**Solution**: See "For Solo Maintainers" options above.
+**Solution**: See "If You Create PRs Manually" options above.
 
 ## Questions?
 
