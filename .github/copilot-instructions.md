@@ -19,7 +19,7 @@ This is **datelib**, a C++ library providing date utilities. The repository is c
 datelib/
 ├── .github/              # GitHub configuration and workflows
 ├── src/                  # Source files (to be created)
-├── include/             # Public header files (to be created)
+├── include/datelib/     # Public header files (to be created)
 ├── tests/               # Test files (to be created)
 ├── examples/            # Example usage (to be created)
 ├── .gitignore           # C++ build artifacts exclusion
@@ -35,13 +35,13 @@ When implementing the build system:
 - **Use CMake** as the build system (industry standard for C++ projects)
 - Create `CMakeLists.txt` in the root directory
 - Support common build types: Debug, Release, RelWithDebInfo
-- Organize build artifacts in a `build/` directory (already in .gitignore via *.o, *.a patterns)
+- Organize build artifacts in a `build/` directory (consider adding `build/` to .gitignore)
 
 ### Code Organization
 
 **Header Files**:
 - Place public API headers in `include/datelib/`
-- Use header guards or `#pragma once`
+- Use standard header guards (recommended for cross-platform compatibility), though `#pragma once` is widely supported
 - Keep implementation details in `src/` directory
 
 **Source Files**:
@@ -84,7 +84,7 @@ cd build && ctest --output-on-failure
   - Document function parameters, return values, and exceptions
   
 - **Modern C++**:
-  - Prefer C++11/14/17 features over legacy C++98
+  - Target C++17 as minimum standard (or newer)
   - Use RAII for resource management
   - Prefer `std::` containers and smart pointers
 
@@ -106,10 +106,15 @@ cd build && ctest --output-on-failure
 ## File Exclusions
 
 The `.gitignore` is configured to exclude common C++ build artifacts:
-- Object files: *.o, *.obj
-- Libraries: *.a, *.lib, *.so, *.dll
-- Executables: *.exe, *.out, *.app
+- Prerequisites: *.d
+- Object files: *.slo, *.lo, *.o, *.obj
+- Precompiled headers: *.gch, *.pch
+- Linker files: *.ilk
 - Debug info: *.pdb, *.dwo
+- Static libraries: *.lai, *.la, *.a, *.lib
+- Dynamic libraries: *.so, *.dylib, *.dll
+- Executables: *.exe, *.out, *.app
+- Fortran modules: *.mod, *.smod
 
 ## Important Notes for Copilot Coding Agent
 
