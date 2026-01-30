@@ -28,7 +28,8 @@ To fully enable these protections, a repository administrator needs to configure
    - ✅ **Require a pull request before merging**
      - ✅ **Require approvals**: Set to at least **1**
      - ✅ **Require review from Code Owners**
-   - ✅ **Require status checks to pass before merging** (optional but recommended)
+   - ✅ **Require status checks to pass before merging**
+     - ✅ Select **Validate PR Requirements** (from branch-protection.yml workflow)
    - ✅ **Do not allow bypassing the above settings** (recommended)
 
 ## Developer Workflow

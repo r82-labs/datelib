@@ -21,7 +21,19 @@ jobs:
               pull_number: context.issue.number
             });
             
-            const approvedReviews = reviews.filter(review => review.state === 'APPROVED');
+            // Get the most recent review from each reviewer
+            const latestReviewsByUser = new Map();
+            for (const review of reviews) {
+              const userId = review.user.id;
+              if (!latestReviewsByUser.has(userId) || 
+                  new Date(review.submitted_at) > new Date(latestReviewsByUser.get(userId).submitted_at)) {
+                latestReviewsByUser.set(userId, review);
+              }
+            }
+            
+            // Count only the latest reviews that are APPROVED
+            const approvedReviews = Array.from(latestReviewsByUser.values())
+              .filter(review => review.state === 'APPROVED');
             
             if (approvedReviews.length < 1) {
               core.setFailed('This PR requires at least 1 approved review before merging to main.');
