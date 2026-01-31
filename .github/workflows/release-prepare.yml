@@ -71,10 +71,6 @@ jobs:
           echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
-      - name: Create release branch
-        run: |
-          git checkout -b release/v${{ steps.version.outputs.new_version }}
-
       - name: Update version in CMakeLists.txt
         run: |
           sed -i 's/VERSION ${{ steps.version.outputs.current_version }}/VERSION ${{ steps.version.outputs.new_version }}/' CMakeLists.txt
@@ -87,31 +83,19 @@ jobs:
 
           echo "Updated CMakeLists.txt to version ${{ steps.version.outputs.new_version }}"
 
-      - name: Commit version bump
-        run: |
-          git add CMakeLists.txt
-          git commit -m "Bump version to ${{ steps.version.outputs.new_version }}"
-
-      - name: Push release branch
-        run: |
-          git push origin release/v${{ steps.version.outputs.new_version }}
-
       - name: Create Pull Request
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          PR_BODY="Automated version bump to ${{ steps.version.outputs.new_version }} (${{ inputs.bump_type }} release)
-
-          This PR bumps the version in CMakeLists.txt from ${{ steps.version.outputs.current_version }} to ${{ steps.version.outputs.new_version }}.
-
-          After merging, the release will be automatically published by the release-publish workflow."
-
-          gh pr create \
-            --base main \
-            --head release/v${{ steps.version.outputs.new_version }} \
-            --title "Release v${{ steps.version.outputs.new_version }}" \
-            --body "$PR_BODY"
-
-          echo "✅ Pull request created successfully"
-          PR_URL=$(gh pr view release/v${{ steps.version.outputs.new_version }} --json url -q .url)
-          echo "PR URL: $PR_URL"
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Bump version to ${{ steps.version.outputs.new_version }}"
+          branch: release/v${{ steps.version.outputs.new_version }}
+          delete-branch: false
+          title: "Release v${{ steps.version.outputs.new_version }}"
+          body: |
+            Automated version bump to ${{ steps.version.outputs.new_version }} (${{ inputs.bump_type }} release)
+            
+            This PR bumps the version in CMakeLists.txt from ${{ steps.version.outputs.current_version }} to ${{ steps.version.outputs.new_version }}.
+            
+            After merging, the release will be automatically published by the release-publish workflow.
+          labels: release
+          assignees: ${{ github.actor }}
