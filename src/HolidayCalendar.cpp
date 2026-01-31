@@ -36,7 +36,7 @@ void HolidayCalendar::addRule(std::unique_ptr<HolidayRule> rule) {
 }
 
 bool HolidayCalendar::isHoliday(const year_month_day& date) const {
-    int year = static_cast<int>(date.year());
+    auto year = static_cast<int>(date.year());
 
     return std::ranges::any_of(rules_, [&](const auto& rule) {
         return rule->appliesTo(year) && rule->calculateDate(year) == date;
@@ -64,7 +64,7 @@ std::vector<year_month_day> HolidayCalendar::getHolidays(int year) const {
 
 std::vector<std::string> HolidayCalendar::getHolidayNames(const year_month_day& date) const {
     std::vector<std::string> names;
-    int year = static_cast<int>(date.year());
+    auto year = static_cast<int>(date.year());
 
     for (const auto& rule : rules_) {
         if (rule->appliesTo(year) && rule->calculateDate(year) == date) {
