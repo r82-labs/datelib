@@ -65,7 +65,7 @@ bool isBusinessDay(const std::chrono::year_month_day& date, const HolidayCalenda
     std::chrono::weekday wd{sys_days_date};
 
     // Check if the day is not a weekend day
-    bool is_not_weekend = (weekend_days.find(wd) == weekend_days.end());
+    bool is_not_weekend = !weekend_days.contains(wd);
 
     // A business day is not a weekend day and not a holiday
     return is_not_weekend && !calendar.isHoliday(date);
