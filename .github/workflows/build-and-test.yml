@@ -215,7 +215,7 @@ jobs:
     - name: Build with SonarQube build wrapper
       run: |
         cd build
-        build-wrapper-linux-x86-64 --out-dir bw-output cmake --build .
+        build-wrapper-linux-x86-64 --out-dir bw-output make -j"$(nproc)"
 
     - name: Run SonarQube scanner
       uses: SonarSource/sonarcloud-github-action@master
