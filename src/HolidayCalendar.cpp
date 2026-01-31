@@ -58,7 +58,7 @@ std::vector<year_month_day> HolidayCalendar::getHolidays(int year) const {
     holidays.erase(std::unique(holidays.begin(), holidays.end()), holidays.end());
 
     return holidays;
-}
+} // LCOV_EXCL_LINE - closing brace coverage unreliable in gcov
 
 std::vector<std::string> HolidayCalendar::getHolidayNames(const year_month_day& date) const {
     std::vector<std::string> names;
@@ -71,6 +71,6 @@ std::vector<std::string> HolidayCalendar::getHolidayNames(const year_month_day& 
     });
 
     return names;
-}
+} // LCOV_EXCL_LINE - closing brace coverage unreliable in gcov
 
 } // namespace datelib

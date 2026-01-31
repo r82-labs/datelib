@@ -45,12 +45,12 @@ jobs:
       run: |
         mkdir -p build
         cd build
-        cmake -DENABLE_COVERAGE=ON ..
+        cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE=ON ..
 
     - name: Build
       run: |
         cd build
-        cmake --build . --config Release
+        cmake --build .
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
@@ -125,6 +125,16 @@ jobs:
 
         # Generate summary
         lcov --list coverage_filtered.info
+
+        # Generate HTML report
+        genhtml coverage_filtered.info --output-directory coverage_html --title "datelib Coverage Report" --legend
+
+    - name: Upload coverage HTML report
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: build/coverage_html/
+        retention-days: 7
 
     - name: Check coverage threshold
       run: |
