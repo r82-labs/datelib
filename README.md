@@ -88,6 +88,39 @@ The version is defined in `CMakeLists.txt` and serves as the single source of tr
 - C++20 compatible compiler (GCC, Clang, or MSVC)
 - Python 3.7+ (for pre-commit hooks)
 
+### SonarQube Code Analysis
+
+This project uses [SonarCloud](https://sonarcloud.io) for continuous code quality and security analysis.
+
+**Setup for Repository Maintainers:**
+
+1. **Create a SonarCloud account** (free for open source projects)
+   - Go to [SonarCloud](https://sonarcloud.io)
+   - Sign in with your GitHub account
+
+2. **Create a new project** on SonarCloud
+   - Import your GitHub repository
+   - Note your organization key and project key
+
+3. **Update `sonar-project.properties`** (if needed)
+   - Update `sonar.organization` with your SonarCloud organization key
+   - Update `sonar.projectKey` with your SonarCloud project key (format: `org_repo`)
+
+4. **Add SonarCloud token to GitHub Secrets:**
+   - In SonarCloud, go to **My Account → Security → Generate Token**
+   - Copy the generated token
+   - In GitHub, go to **Settings → Secrets and variables → Actions**
+   - Add a new repository secret named `SONAR_TOKEN` with the token value
+
+5. **Analysis runs automatically:**
+   - On every push to `main`/`master` branch
+   - On pull requests from the same repository
+   - View results at `https://sonarcloud.io/project/overview?id=your_project_key`
+
+**For Contributors:**
+
+The SonarQube job will automatically skip if the `SONAR_TOKEN` secret is not available (e.g., for forks). Your pull requests will still pass CI checks without SonarQube analysis.
+
 ### Pre-commit Hooks
 
 This project uses [pre-commit](https://pre-commit.com/) to automatically format code before commits.
