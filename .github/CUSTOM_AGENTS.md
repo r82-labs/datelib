@@ -14,6 +14,11 @@ This is a known limitation being tracked in the GitHub Community:
 - **Name:** Strategic Architect & Orchestrator
 - **Purpose:** Analyzes issues, features, and PRs to delegate work or architect new agent profiles
 
+### C++ Code Quality Reviewer Agent
+- **File:** `.github/agents/cpp-code-reviewer.agent.md`
+- **Name:** C++ Code Quality Reviewer
+- **Purpose:** Expert C++20 code reviewer ensuring highest quality standards, comprehensive edge case coverage, and rigorous testing practices
+
 ## Workarounds
 
 ### Option 1: Use AGENTS.md (Recommended)
