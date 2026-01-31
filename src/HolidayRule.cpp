@@ -1,6 +1,7 @@
 #include "datelib/HolidayRule.h"
 
 #include "datelib/exceptions.h"
+
 #include <stdexcept>
 
 namespace datelib {
