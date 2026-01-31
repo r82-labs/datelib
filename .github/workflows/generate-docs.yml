@@ -38,93 +38,14 @@ jobs:
         
         doxygen Doxyfile
         
-    - name: Checkout Wiki
-      id: checkout-wiki
-      continue-on-error: true
-      uses: actions/checkout@v4
+        # Add .nojekyll file to prevent GitHub Pages from processing with Jekyll
+        touch docs/html/.nojekyll
+        
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v4
       with:
-        repository: ${{ github.repository }}.wiki
-        path: wiki
-        token: ${{ secrets.GITHUB_TOKEN }}
-    
-    - name: Copy documentation to Wiki
-      if: steps.checkout-wiki.outcome == 'success'
-      run: |
-        # Create API directory in wiki if it doesn't exist
-        mkdir -p wiki/API
-        
-        # Remove old API documentation if it exists
-        rm -rf wiki/API/*
-        
-        # Copy generated HTML documentation to wiki
-        cp -r docs/html/* wiki/API/
-        
-        # Get current timestamp
-        TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
-        
-        # Create/update the API index page
-        cat > wiki/API.md << EOF
-        # API Documentation
-        
-        This page contains the auto-generated API documentation for the datelib C++ library.
-        
-        ## Viewing the Documentation
-        
-        The full API documentation is available in the [API](API) directory.
-        
-        ### Quick Links
-        
-        - [Main Page](API/index.html)
-        - [Classes](API/annotated.html)
-        - [Files](API/files.html)
-        - [Namespaces](API/namespaces.html)
-        
-        ## Documentation Contents
-        
-        The datelib library provides the following main components:
-        
-        ### Core Classes
-        
-        - **HolidayRule** - Abstract base class for holiday calculation rules
-        - **HolidayCalendar** - Calendar for managing holidays
-        - **ExplicitDateRule** - Rule for explicit one-time holidays
-        - **FixedDateRule** - Rule for fixed annual holidays
-        - **NthWeekdayRule** - Rule for holidays on specific weekday occurrences
-        
-        ### Functions
-        
-        - **isBusinessDay()** - Check if a date is a business day
-        
-        ---
-        
-        *Documentation auto-generated from code comments using Doxygen.*
-        EOF
-        echo "*Last updated: $TIMESTAMP*" >> wiki/API.md
-    
-    - name: Commit and push to Wiki
-      if: steps.checkout-wiki.outcome == 'success'
-      run: |
-        cd wiki
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
-        git add .
-        
-        # Only commit if there are changes
-        if git diff --staged --quiet; then
-          echo "No changes to documentation"
-        else
-          git commit -m "Update API documentation - $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
-          git push
-          echo "Documentation updated successfully"
-        fi
-    
-    - name: Wiki not available
-      if: steps.checkout-wiki.outcome != 'success'
-      run: |
-        echo "::notice::Wiki repository is not available. Documentation was generated but not published to Wiki."
-        echo "::notice::To enable Wiki publishing:"
-        echo "::notice::  1. Go to repository Settings"
-        echo "::notice::  2. Enable Wiki under Features section"
-        echo "::notice::  3. Create at least one page in the Wiki"
-        echo "::notice::The generated documentation is available in the 'docs/html' directory."
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./docs/html
+        publish_branch: gh-pages
+        commit_message: 'Update API documentation - ${{ github.sha }}'
 

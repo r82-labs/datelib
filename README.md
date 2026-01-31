@@ -3,7 +3,7 @@ A C++ library of date utilities
 
 ## Documentation
 
-Complete API documentation is available in the [GitHub Wiki](https://github.com/r82-labs/datelib/wiki/API). The documentation is automatically generated from code comments and updated with each new release.
+Complete API documentation is available at [https://r82-labs.github.io/datelib/](https://r82-labs.github.io/datelib/). The documentation is automatically generated from code comments using Doxygen and updated with each new release.
 
 ## Releases
 
@@ -224,7 +224,7 @@ open docs/html/index.html  # macOS
 xdg-open docs/html/index.html  # Linux
 ```
 
-**Note:** The `docs/` directory is gitignored. Documentation is automatically generated and published to the [Wiki](https://github.com/r82-labs/datelib/wiki/API) when a new release is published.
+**Note:** The `docs/` directory is gitignored. Documentation is automatically generated and published to [GitHub Pages](https://r82-labs.github.io/datelib/) when a new release is published or when the documentation workflow is manually triggered.
 
 ## Development with GitHub Copilot
 
