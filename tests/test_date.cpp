@@ -294,3 +294,225 @@ TEST_CASE("isBusinessDay with custom weekend days", "[isBusinessDay][configurabl
                                        no_weekend)); // Sunday
     }
 }
+
+TEST_CASE("adjust with Following convention", "[adjust]") {
+    datelib::HolidayCalendar calendar;
+
+    SECTION("Business day remains unchanged") {
+        // Tuesday, January 2, 2024
+        auto date = year_month_day{year{2024}, month{1}, day{2}};
+        auto adjusted = datelib::adjust(date, datelib::BusinessDayConvention::Following, calendar);
+        REQUIRE(adjusted == date);
+    }
+
+    SECTION("Saturday moves to Monday") {
+        // Saturday, January 6, 2024 -> Monday, January 8, 2024
+        auto date = year_month_day{year{2024}, month{1}, day{6}};
+        auto adjusted = datelib::adjust(date, datelib::BusinessDayConvention::Following, calendar);
+        REQUIRE(adjusted == year_month_day{year{2024}, month{1}, day{8}});
+    }
+
+    SECTION("Sunday moves to Monday") {
+        // Sunday, January 7, 2024 -> Monday, January 8, 2024
+        auto date = year_month_day{year{2024}, month{1}, day{7}};
+        auto adjusted = datelib::adjust(date, datelib::BusinessDayConvention::Following, calendar);
+        REQUIRE(adjusted == year_month_day{year{2024}, month{1}, day{8}});
+    }
+
+    SECTION("Holiday on weekday moves to next business day") {
+        calendar.addRule(std::make_unique<datelib::FixedDateRule>("New Year's Day", 1, 1));
+        // Monday, January 1, 2024 (New Year's) -> Tuesday, January 2, 2024
+        auto date = year_month_day{year{2024}, month{1}, day{1}};
+        auto adjusted = datelib::adjust(date, datelib::BusinessDayConvention::Following, calendar);
+        REQUIRE(adjusted == year_month_day{year{2024}, month{1}, day{2}});
+    }
+}
+
+TEST_CASE("adjust with ModifiedFollowing convention", "[adjust]") {
+    datelib::HolidayCalendar calendar;
+
+    SECTION("Business day remains unchanged") {
+        // Tuesday, January 2, 2024
+        auto date = year_month_day{year{2024}, month{1}, day{2}};
+        auto adjusted =
+            datelib::adjust(date, datelib::BusinessDayConvention::ModifiedFollowing, calendar);
+        REQUIRE(adjusted == date);
+    }
+
+    SECTION("Weekend within same month moves forward") {
+        // Saturday, January 6, 2024 -> Monday, January 8, 2024
+        auto date = year_month_day{year{2024}, month{1}, day{6}};
+        auto adjusted =
+            datelib::adjust(date, datelib::BusinessDayConvention::ModifiedFollowing, calendar);
+        REQUIRE(adjusted == year_month_day{year{2024}, month{1}, day{8}});
+    }
+
+    SECTION("Weekend at month end crosses into next month, moves backward") {
+        // Saturday, June 29, 2024 (last Sat of June)
+        // Following would give Monday, July 1
+        // ModifiedFollowing gives Friday, June 28 (to stay in June)
+        auto date = year_month_day{year{2024}, month{6}, day{29}};
+        auto adjusted =
+            datelib::adjust(date, datelib::BusinessDayConvention::ModifiedFollowing, calendar);
+        REQUIRE(adjusted == year_month_day{year{2024}, month{6}, day{28}});
+    }
+
+    SECTION("Multiple non-business days at month end") {
+        // Sunday, June 30, 2024 (last day of June)
+        // Following would give Monday, July 1
+        // ModifiedFollowing gives Friday, June 28
+        auto date = year_month_day{year{2024}, month{6}, day{30}};
+        auto adjusted =
+            datelib::adjust(date, datelib::BusinessDayConvention::ModifiedFollowing, calendar);
+        REQUIRE(adjusted == year_month_day{year{2024}, month{6}, day{28}});
+    }
+}
+
+TEST_CASE("adjust with Preceding convention", "[adjust]") {
+    datelib::HolidayCalendar calendar;
+
+    SECTION("Business day remains unchanged") {
+        // Tuesday, January 2, 2024
+        auto date = year_month_day{year{2024}, month{1}, day{2}};
+        auto adjusted = datelib::adjust(date, datelib::BusinessDayConvention::Preceding, calendar);
+        REQUIRE(adjusted == date);
+    }
+
+    SECTION("Saturday moves to Friday") {
+        // Saturday, January 6, 2024 -> Friday, January 5, 2024
+        auto date = year_month_day{year{2024}, month{1}, day{6}};
+        auto adjusted = datelib::adjust(date, datelib::BusinessDayConvention::Preceding, calendar);
+        REQUIRE(adjusted == year_month_day{year{2024}, month{1}, day{5}});
+    }
+
+    SECTION("Sunday moves to Friday") {
+        // Sunday, January 7, 2024 -> Friday, January 5, 2024
+        auto date = year_month_day{year{2024}, month{1}, day{7}};
+        auto adjusted = datelib::adjust(date, datelib::BusinessDayConvention::Preceding, calendar);
+        REQUIRE(adjusted == year_month_day{year{2024}, month{1}, day{5}});
+    }
+
+    SECTION("Holiday on weekday moves to previous business day") {
+        calendar.addRule(std::make_unique<datelib::FixedDateRule>("Independence Day", 7, 4));
+        // Thursday, July 4, 2024 (Independence Day) -> Wednesday, July 3, 2024
+        auto date = year_month_day{year{2024}, month{7}, day{4}};
+        auto adjusted = datelib::adjust(date, datelib::BusinessDayConvention::Preceding, calendar);
+        REQUIRE(adjusted == year_month_day{year{2024}, month{7}, day{3}});
+    }
+}
+
+TEST_CASE("adjust with ModifiedPreceding convention", "[adjust]") {
+    datelib::HolidayCalendar calendar;
+
+    SECTION("Business day remains unchanged") {
+        // Tuesday, January 2, 2024
+        auto date = year_month_day{year{2024}, month{1}, day{2}};
+        auto adjusted =
+            datelib::adjust(date, datelib::BusinessDayConvention::ModifiedPreceding, calendar);
+        REQUIRE(adjusted == date);
+    }
+
+    SECTION("Weekend within same month moves backward") {
+        // Saturday, January 6, 2024 -> Friday, January 5, 2024
+        auto date = year_month_day{year{2024}, month{1}, day{6}};
+        auto adjusted =
+            datelib::adjust(date, datelib::BusinessDayConvention::ModifiedPreceding, calendar);
+        REQUIRE(adjusted == year_month_day{year{2024}, month{1}, day{5}});
+    }
+
+    SECTION("Weekend at month start crosses into previous month, moves forward") {
+        // Sunday, September 1, 2024 (first day is Sunday)
+        // Preceding would give Friday, August 30
+        // ModifiedPreceding gives Monday, September 2 (to stay in September)
+        auto date = year_month_day{year{2024}, month{9}, day{1}};
+        auto adjusted =
+            datelib::adjust(date, datelib::BusinessDayConvention::ModifiedPreceding, calendar);
+        REQUIRE(adjusted == year_month_day{year{2024}, month{9}, day{2}});
+    }
+}
+
+TEST_CASE("adjust with Unadjusted convention", "[adjust]") {
+    datelib::HolidayCalendar calendar;
+
+    SECTION("Business day remains unchanged") {
+        auto date = year_month_day{year{2024}, month{1}, day{2}};
+        auto adjusted = datelib::adjust(date, datelib::BusinessDayConvention::Unadjusted, calendar);
+        REQUIRE(adjusted == date);
+    }
+
+    SECTION("Weekend remains unchanged") {
+        auto date = year_month_day{year{2024}, month{1}, day{6}};
+        auto adjusted = datelib::adjust(date, datelib::BusinessDayConvention::Unadjusted, calendar);
+        REQUIRE(adjusted == date);
+    }
+
+    SECTION("Holiday remains unchanged") {
+        calendar.addRule(std::make_unique<datelib::FixedDateRule>("New Year's Day", 1, 1));
+        auto date = year_month_day{year{2024}, month{1}, day{1}};
+        auto adjusted = datelib::adjust(date, datelib::BusinessDayConvention::Unadjusted, calendar);
+        REQUIRE(adjusted == date);
+    }
+}
+
+TEST_CASE("adjust with complex scenarios", "[adjust][edge_cases]") {
+    datelib::HolidayCalendar usHolidays;
+    usHolidays.addRule(std::make_unique<datelib::FixedDateRule>("New Year's Day", 1, 1));
+    usHolidays.addRule(std::make_unique<datelib::FixedDateRule>("Independence Day", 7, 4));
+
+    SECTION("Holiday at month end with Following") {
+        // Tuesday, December 31, 2024 is a business day
+        auto date = year_month_day{year{2024}, month{12}, day{31}};
+        auto adjusted =
+            datelib::adjust(date, datelib::BusinessDayConvention::Following, usHolidays);
+        REQUIRE(adjusted == date);
+    }
+
+    SECTION("Long weekend at month end with ModifiedFollowing") {
+        // Create a scenario where we have multiple consecutive non-business days
+        // For example, if we had holidays Thursday-Friday at month end
+        datelib::HolidayCalendar calendar;
+        calendar.addHoliday("Special", year_month_day{year{2024}, month{5}, day{30}});  // Thursday
+        calendar.addHoliday("Special2", year_month_day{year{2024}, month{5}, day{31}}); // Friday
+
+        // Thursday, May 30, 2024 is a holiday, Fri May 31 is holiday, Sat-Sun are weekend
+        // Following would give Monday, June 3
+        // ModifiedFollowing should give Wednesday, May 29 (to stay in May)
+        auto date = year_month_day{year{2024}, month{5}, day{30}};
+        auto adjusted =
+            datelib::adjust(date, datelib::BusinessDayConvention::ModifiedFollowing, calendar);
+        REQUIRE(adjusted == year_month_day{year{2024}, month{5}, day{29}});
+    }
+}
+
+TEST_CASE("adjust with invalid dates", "[adjust][edge_cases]") {
+    datelib::HolidayCalendar calendar;
+
+    SECTION("Invalid date throws exception") {
+        // February 30th is invalid
+        auto date = year_month_day{year{2024}, month{2}, day{30}};
+        REQUIRE_THROWS_WITH(
+            datelib::adjust(date, datelib::BusinessDayConvention::Following, calendar),
+            "Invalid date provided to adjust");
+    }
+}
+
+TEST_CASE("adjust with custom weekend days", "[adjust][configurable]") {
+    datelib::HolidayCalendar calendar;
+    std::unordered_set<weekday, datelib::WeekdayHash> friday_saturday_weekend = {Friday, Saturday};
+
+    SECTION("Following with Friday-Saturday weekend") {
+        // Friday, January 5, 2024 -> Sunday, January 7, 2024
+        auto date = year_month_day{year{2024}, month{1}, day{5}};
+        auto adjusted = datelib::adjust(date, datelib::BusinessDayConvention::Following, calendar,
+                                        friday_saturday_weekend);
+        REQUIRE(adjusted == year_month_day{year{2024}, month{1}, day{7}});
+    }
+
+    SECTION("Preceding with Friday-Saturday weekend") {
+        // Saturday, January 6, 2024 -> Thursday, January 4, 2024
+        auto date = year_month_day{year{2024}, month{1}, day{6}};
+        auto adjusted = datelib::adjust(date, datelib::BusinessDayConvention::Preceding, calendar,
+                                        friday_saturday_weekend);
+        REQUIRE(adjusted == year_month_day{year{2024}, month{1}, day{4}});
+    }
+}
