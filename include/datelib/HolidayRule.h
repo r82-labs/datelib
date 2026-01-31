@@ -8,6 +8,11 @@
 namespace datelib {
 
 /**
+ * @brief Enum for specifying occurrence of a weekday in a month
+ */
+enum class Occurrence { First = 1, Second = 2, Third = 3, Fourth = 4, Fifth = 5, Last = -1 };
+
+/**
  * @brief Abstract base class for holiday calculation rules
  */
 class HolidayRule {
@@ -93,9 +98,9 @@ class NthWeekdayRule : public HolidayRule {
      * @param name The name of the holiday
      * @param month The month (1-12)
      * @param weekday The day of week (0=Sunday, 6=Saturday)
-     * @param occurrence Which occurrence (1=first, 2=second, -1=last)
+     * @param occurrence Which occurrence (First, Second, Third, Fourth, Fifth, or Last)
      */
-    NthWeekdayRule(std::string name, unsigned month, unsigned weekday, int occurrence);
+    NthWeekdayRule(std::string name, unsigned month, unsigned weekday, Occurrence occurrence);
 
     std::chrono::year_month_day calculateDate(int year) const override;
     std::string getName() const override { return name_; }
@@ -105,7 +110,7 @@ class NthWeekdayRule : public HolidayRule {
     std::string name_;
     std::chrono::month month_;
     std::chrono::weekday weekday_;
-    int occurrence_; // 1=first, 2=second, ..., -1=last
+    Occurrence occurrence_;
 };
 
 } // namespace datelib

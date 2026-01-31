@@ -14,7 +14,7 @@ TEST_CASE("ExplicitDateRule construction", "[HolidayRule]") {
 
     SECTION("Invalid dates") {
         year_month_day invalid_ymd{year{2024}, month{2}, day{30}};
-        REQUIRE_THROWS_AS(datelib::ExplicitDateRule("Invalid", invalid_ymd), std::invalid_argument);
+        REQUIRE_THROWS_WITH(datelib::ExplicitDateRule("Invalid", invalid_ymd), "Invalid date");
     }
 }
 
@@ -29,7 +29,8 @@ TEST_CASE("ExplicitDateRule calculates correct dates", "[HolidayRule]") {
     }
 
     SECTION("Throws for different year") {
-        REQUIRE_THROWS_AS(halloween.calculateDate(2025), std::runtime_error);
+        REQUIRE_THROWS_WITH(halloween.calculateDate(2025),
+                            "Explicit date does not exist in this year");
     }
 }
 
@@ -40,13 +41,24 @@ TEST_CASE("FixedDateRule construction", "[HolidayRule]") {
     }
 
     SECTION("Invalid months") {
-        REQUIRE_THROWS_AS(datelib::FixedDateRule("Invalid", 0, 1), std::invalid_argument);
-        REQUIRE_THROWS_AS(datelib::FixedDateRule("Invalid", 13, 1), std::invalid_argument);
+        REQUIRE_THROWS_WITH(datelib::FixedDateRule("Invalid", 0, 1),
+                            "Month must be between 1 and 12");
+        REQUIRE_THROWS_WITH(datelib::FixedDateRule("Invalid", 13, 1),
+                            "Month must be between 1 and 12");
     }
 
     SECTION("Invalid days") {
-        REQUIRE_THROWS_AS(datelib::FixedDateRule("Invalid", 1, 0), std::invalid_argument);
-        REQUIRE_THROWS_AS(datelib::FixedDateRule("Invalid", 1, 32), std::invalid_argument);
+        REQUIRE_THROWS_WITH(datelib::FixedDateRule("Invalid", 1, 0),
+                            "Day must be between 1 and 31");
+        REQUIRE_THROWS_WITH(datelib::FixedDateRule("Invalid", 1, 32),
+                            "Day must be between 1 and 31");
+    }
+
+    SECTION("Invalid date combinations") {
+        // Feb 30 should fail during calculation, not construction
+        REQUIRE_NOTHROW(datelib::FixedDateRule("Invalid Feb 30", 2, 30));
+        datelib::FixedDateRule feb30("Invalid Feb 30", 2, 30);
+        REQUIRE_THROWS_WITH(feb30.calculateDate(2024), "Invalid date for this year");
     }
 }
 
@@ -68,20 +80,22 @@ TEST_CASE("FixedDateRule calculates correct dates", "[HolidayRule]") {
 
 TEST_CASE("NthWeekdayRule construction", "[HolidayRule]") {
     SECTION("Valid Nth weekday rules") {
-        REQUIRE_NOTHROW(datelib::NthWeekdayRule("Thanksgiving", 11, 4, 4));
-        REQUIRE_NOTHROW(datelib::NthWeekdayRule("Labor Day", 9, 1, 1));
+        REQUIRE_NOTHROW(
+            datelib::NthWeekdayRule("Thanksgiving", 11, 4, datelib::Occurrence::Fourth));
+        REQUIRE_NOTHROW(datelib::NthWeekdayRule("Labor Day", 9, 1, datelib::Occurrence::First));
     }
 
     SECTION("Invalid parameters") {
-        REQUIRE_THROWS_AS(datelib::NthWeekdayRule("Invalid", 0, 1, 1), std::invalid_argument);
-        REQUIRE_THROWS_AS(datelib::NthWeekdayRule("Invalid", 1, 7, 1), std::invalid_argument);
-        REQUIRE_THROWS_AS(datelib::NthWeekdayRule("Invalid", 1, 1, 0), std::invalid_argument);
+        REQUIRE_THROWS_WITH(datelib::NthWeekdayRule("Invalid", 0, 1, datelib::Occurrence::First),
+                            "Month must be between 1 and 12");
+        REQUIRE_THROWS_WITH(datelib::NthWeekdayRule("Invalid", 1, 7, datelib::Occurrence::First),
+                            "Weekday must be between 0 and 6");
     }
 }
 
 TEST_CASE("NthWeekdayRule calculates correct dates", "[HolidayRule]") {
     SECTION("Thanksgiving - 4th Thursday of November") {
-        datelib::NthWeekdayRule thanksgiving("Thanksgiving", 11, 4, 4);
+        datelib::NthWeekdayRule thanksgiving("Thanksgiving", 11, 4, datelib::Occurrence::Fourth);
 
         auto date2024 = thanksgiving.calculateDate(2024);
         REQUIRE(date2024 == year_month_day{year{2024}, month{11}, day{28}});
@@ -93,7 +107,7 @@ TEST_CASE("NthWeekdayRule calculates correct dates", "[HolidayRule]") {
     }
 
     SECTION("Labor Day - 1st Monday of September") {
-        datelib::NthWeekdayRule laborDay("Labor Day", 9, 1, 1);
+        datelib::NthWeekdayRule laborDay("Labor Day", 9, 1, datelib::Occurrence::First);
 
         auto date2024 = laborDay.calculateDate(2024);
         REQUIRE(date2024 == year_month_day{year{2024}, month{9}, day{2}});
@@ -105,7 +119,7 @@ TEST_CASE("NthWeekdayRule calculates correct dates", "[HolidayRule]") {
     }
 
     SECTION("Memorial Day - Last Monday of May") {
-        datelib::NthWeekdayRule memorialDay("Memorial Day", 5, 1, -1);
+        datelib::NthWeekdayRule memorialDay("Memorial Day", 5, 1, datelib::Occurrence::Last);
 
         auto date2024 = memorialDay.calculateDate(2024);
         REQUIRE(date2024 == year_month_day{year{2024}, month{5}, day{27}});
@@ -136,7 +150,7 @@ TEST_CASE("HolidayRule clone", "[HolidayRule]") {
     }
 
     SECTION("NthWeekdayRule clone") {
-        datelib::NthWeekdayRule original("Thanksgiving", 11, 4, 4);
+        datelib::NthWeekdayRule original("Thanksgiving", 11, 4, datelib::Occurrence::Fourth);
         auto cloned = original.clone();
 
         REQUIRE(cloned->getName() == original.getName());

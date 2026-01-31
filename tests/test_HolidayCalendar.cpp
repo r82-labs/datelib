@@ -47,7 +47,8 @@ TEST_CASE("HolidayCalendar with rules", "[HolidayCalendar]") {
     SECTION("Multiple rules") {
         calendar.addRule(std::make_unique<datelib::FixedDateRule>("New Year's Day", 1, 1));
         calendar.addRule(std::make_unique<datelib::FixedDateRule>("Christmas", 12, 25));
-        calendar.addRule(std::make_unique<datelib::NthWeekdayRule>("Thanksgiving", 11, 4, 4));
+        calendar.addRule(std::make_unique<datelib::NthWeekdayRule>("Thanksgiving", 11, 4,
+                                                                   datelib::Occurrence::Fourth));
 
         auto holidays = calendar.getHolidays(2024);
         REQUIRE(holidays.size() == 3);
@@ -123,22 +124,6 @@ TEST_CASE("HolidayCalendar copy operations", "[HolidayCalendar]") {
     }
 }
 
-TEST_CASE("HolidayCalendar clear", "[HolidayCalendar]") {
-    datelib::HolidayCalendar calendar;
-    calendar.addHoliday("July 4th", year_month_day{year{2024}, month{7}, day{4}});
-    calendar.addRule(std::make_unique<datelib::FixedDateRule>("Christmas", 12, 25));
-
-    REQUIRE(calendar.isHoliday(year_month_day{year{2024}, month{7}, day{4}}));
-
-    calendar.clear();
-
-    REQUIRE_FALSE(calendar.isHoliday(year_month_day{year{2024}, month{7}, day{4}}));
-    REQUIRE_FALSE(calendar.isHoliday(year_month_day{year{2024}, month{12}, day{25}}));
-
-    auto holidays = calendar.getHolidays(2024);
-    REQUIRE(holidays.empty());
-}
-
 TEST_CASE("Real-world US holidays example", "[HolidayCalendar]") {
     datelib::HolidayCalendar usHolidays;
 
@@ -149,13 +134,18 @@ TEST_CASE("Real-world US holidays example", "[HolidayCalendar]") {
     usHolidays.addRule(std::make_unique<datelib::FixedDateRule>("Christmas", 12, 25));
 
     // Nth weekday holidays
+    usHolidays.addRule(std::make_unique<datelib::NthWeekdayRule>("Martin Luther King Jr. Day", 1, 1,
+                                                                 datelib::Occurrence::Third));
+    usHolidays.addRule(std::make_unique<datelib::NthWeekdayRule>("Presidents' Day", 2, 1,
+                                                                 datelib::Occurrence::Third));
     usHolidays.addRule(
-        std::make_unique<datelib::NthWeekdayRule>("Martin Luther King Jr. Day", 1, 1, 3));
-    usHolidays.addRule(std::make_unique<datelib::NthWeekdayRule>("Presidents' Day", 2, 1, 3));
-    usHolidays.addRule(std::make_unique<datelib::NthWeekdayRule>("Memorial Day", 5, 1, -1));
-    usHolidays.addRule(std::make_unique<datelib::NthWeekdayRule>("Labor Day", 9, 1, 1));
-    usHolidays.addRule(std::make_unique<datelib::NthWeekdayRule>("Columbus Day", 10, 1, 2));
-    usHolidays.addRule(std::make_unique<datelib::NthWeekdayRule>("Thanksgiving", 11, 4, 4));
+        std::make_unique<datelib::NthWeekdayRule>("Memorial Day", 5, 1, datelib::Occurrence::Last));
+    usHolidays.addRule(
+        std::make_unique<datelib::NthWeekdayRule>("Labor Day", 9, 1, datelib::Occurrence::First));
+    usHolidays.addRule(std::make_unique<datelib::NthWeekdayRule>("Columbus Day", 10, 1,
+                                                                 datelib::Occurrence::Second));
+    usHolidays.addRule(std::make_unique<datelib::NthWeekdayRule>("Thanksgiving", 11, 4,
+                                                                 datelib::Occurrence::Fourth));
 
     SECTION("Verify 2024 holidays") {
         auto holidays2024 = usHolidays.getHolidays(2024);

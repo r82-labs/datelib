@@ -1,6 +1,7 @@
 #include "datelib/HolidayCalendar.h"
 
 #include <algorithm>
+#include <optional>
 
 namespace datelib {
 
@@ -31,41 +32,33 @@ void HolidayCalendar::addHoliday(const std::string& name, const year_month_day& 
 }
 
 void HolidayCalendar::addRule(std::unique_ptr<HolidayRule> rule) {
-    if (rule) {
-        rules_.push_back(std::move(rule));
-    }
+    rules_.push_back(std::move(rule));
 }
 
 bool HolidayCalendar::isHoliday(const year_month_day& date) const {
     int year = static_cast<int>(date.year());
-    for (const auto& rule : rules_) {
-        try {
-            year_month_day ruleDate = rule->calculateDate(year);
-            if (ruleDate == date) {
-                return true;
-            }
-        } catch (...) {
-            // Rule might not be applicable for this year, skip it
-            continue;
-        }
-    }
 
-    return false;
+    return std::any_of(rules_.begin(), rules_.end(), [&](const auto& rule) {
+        try {
+            return rule->calculateDate(year) == date;
+        } catch (...) {
+            return false;
+        }
+    });
 }
 
 std::vector<year_month_day> HolidayCalendar::getHolidays(int year) const {
     std::vector<year_month_day> holidays;
+    holidays.reserve(rules_.size());
 
-    // Collect all holidays from rules
-    for (const auto& rule : rules_) {
+    // Collect all holidays from rules using transform_reduce pattern
+    std::for_each(rules_.begin(), rules_.end(), [&](const auto& rule) {
         try {
-            year_month_day ruleDate = rule->calculateDate(year);
-            holidays.push_back(ruleDate);
+            holidays.push_back(rule->calculateDate(year));
         } catch (...) {
-            // Rule might not be applicable for this year, skip it
-            continue;
+            // Rule not applicable for this year
         }
-    }
+    });
 
     // Sort and remove duplicates
     std::sort(holidays.begin(), holidays.end());
@@ -76,25 +69,19 @@ std::vector<year_month_day> HolidayCalendar::getHolidays(int year) const {
 
 std::vector<std::string> HolidayCalendar::getHolidayNames(const year_month_day& date) const {
     std::vector<std::string> names;
-
     int year = static_cast<int>(date.year());
-    for (const auto& rule : rules_) {
+
+    std::for_each(rules_.begin(), rules_.end(), [&](const auto& rule) {
         try {
-            year_month_day ruleDate = rule->calculateDate(year);
-            if (ruleDate == date) {
+            if (rule->calculateDate(year) == date) {
                 names.push_back(rule->getName());
             }
         } catch (...) {
-            // Rule might not be applicable for this year, skip it
-            continue;
+            // Rule not applicable for this year
         }
-    }
+    });
 
     return names;
-}
-
-void HolidayCalendar::clear() {
-    rules_.clear();
 }
 
 } // namespace datelib

@@ -73,11 +73,6 @@ class HolidayCalendar {
      */
     std::vector<std::string> getHolidayNames(const std::chrono::year_month_day& date) const;
 
-    /**
-     * @brief Clear all holidays and rules
-     */
-    void clear();
-
   private:
     std::vector<std::unique_ptr<HolidayRule>> rules_;
 };
