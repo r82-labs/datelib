@@ -1,6 +1,6 @@
 #define CATCH_CONFIG_MAIN
-#include "datelib/holiday_calendar.h"
 #include "datelib/date.h"
+#include "datelib/holiday_calendar.h"
 
 #include "catch2/catch.hpp"
 
