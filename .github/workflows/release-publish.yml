@@ -162,3 +162,7 @@ jobs:
           release/datelib-${{ steps.version.outputs.version }}-linux-x86_64.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  
+  generate-docs:
+    needs: publish
+    uses: ./.github/workflows/generate-docs.yml
