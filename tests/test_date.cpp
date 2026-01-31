@@ -770,7 +770,7 @@ TEST_CASE("advance with years period", "[advance]") {
     datelib::HolidayCalendar calendar;
 
     SECTION("Advance by 10 years with Following convention") {
-        // Tuesday, January 2, 2024 + 10Y = Thursday, January 2, 2034 (business day)
+        // Tuesday, January 2, 2024 + 10Y = Monday, January 2, 2034 (business day)
         auto date = year_month_day{year{2024}, month{1}, day{2}};
         auto result =
             datelib::advance(date, "10Y", datelib::BusinessDayConvention::Following, calendar);
