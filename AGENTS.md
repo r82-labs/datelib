@@ -30,6 +30,38 @@ Since GitHub Copilot doesn't currently support direct assignment of custom agent
    - Mention `@copilot` and specify you want architectural analysis
    - Reference this AGENTS.md file for agent context
 
+### C++ Code Quality Reviewer Agent
+**Role:** Expert C++20 Code Reviewer
+**Purpose:** Ensures highest quality C++20 standards compliance, comprehensive edge case coverage, and rigorous testing practices for all C++ code changes.
+
+**When to use the C++ Code Reviewer agent:**
+- Reviewing Pull Requests with C++ code changes
+- Validating C++20 standards compliance
+- Ensuring comprehensive edge case test coverage
+- Checking for memory safety, exception safety, and performance issues
+- Verifying code quality before merging
+
+**Key Focus Areas:**
+- C++20 feature usage and modern C++ idioms
+- Memory safety (RAII, smart pointers, no leaks)
+- Exception safety and error handling
+- Edge case testing (especially for date/time operations)
+- Code clarity, maintainability, and documentation
+- Performance optimization opportunities
+
+**How to invoke:**
+1. **Via Copilot Chat:**
+   - Reference the C++ code reviewer agent when reviewing code
+   - Request specific edge case analysis for date/time operations
+
+2. **In Pull Request Descriptions:**
+   - Mention `@copilot` and request C++20 code quality review
+   - Ask for edge case coverage verification
+
+3. **For Issue Analysis:**
+   - Request code quality assessment using the reviewer agent's standards
+   - Ask for edge case identification before implementation
+
 ## General Project Conventions
 
 When working on this repository, all agents should:
