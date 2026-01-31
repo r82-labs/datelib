@@ -43,6 +43,8 @@ Pre-built releases are available on the [GitHub Releases page](https://github.co
 
 Releases are created through GitHub Actions using semantic versioning (MAJOR.MINOR.PATCH).
 
+> **⚠️ First-time setup required:** If this is your first time running the release workflow, you need to configure a Personal Access Token (PAT). See [`.github/RELEASE_WORKFLOW_SETUP.md`](.github/RELEASE_WORKFLOW_SETUP.md) for detailed setup instructions.
+
 **To create a new release:**
 
 1. **Trigger the release preparation:**

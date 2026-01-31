@@ -25,7 +25,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          # Use PAT_TOKEN for PR creation permissions. Falls back to GITHUB_TOKEN if not available.
+          token: ${{ secrets.PAT_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Configure Git
         run: |
@@ -86,7 +87,9 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          # Use PAT_TOKEN for PR creation. GITHUB_TOKEN has restrictions in repos with branch protection.
+          # See: https://docs.github.com/en/actions/security-guides/automatic-token-authentication#permissions-for-the-github_token
+          token: ${{ secrets.PAT_TOKEN || secrets.GITHUB_TOKEN }}
           commit-message: "Bump version to ${{ steps.version.outputs.new_version }}"
           branch: release/v${{ steps.version.outputs.new_version }}
           delete-branch: false
