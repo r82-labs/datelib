@@ -20,7 +20,7 @@ GitHub sends email notifications for Actions workflows based on your personal or
 
 ### Option 2: Repository Watch Settings
 
-1. Navigate to this repository: https://github.com/r82labs-ronan/datelib
+1. Navigate to this repository: https://github.com/r82labs/datelib
 
 2. Click the **"Watch"** or **"Unwatch"** button at the top
 
@@ -35,14 +35,14 @@ GitHub sends email notifications for Actions workflows based on your personal or
 If you still want to keep notifications but reduce email clutter:
 
 1. Set up an email filter to automatically archive/label GitHub Actions emails:
-   - **Gmail**: Create a filter for emails containing `[r82labs-ronan/datelib]` and `workflow run`
+   - **Gmail**: Create a filter for emails containing `[r82labs/datelib]` and `workflow run`
    - **Outlook**: Create a rule to move these emails to a specific folder
    - **Other email clients**: Use similar filtering capabilities
 
 Example Gmail filter criteria:
 ```
 from:(notifications@github.com)
-subject:([r82labs-ronan/datelib])
+subject:([r82labs/datelib])
 subject:(workflow run OR Actions)
 ```
 

@@ -78,7 +78,7 @@ Simply approve the PR and merge it - no configuration changes needed.
 
 #### If You Create PRs Manually
 
-If you are the sole maintainer creating your own PRs manually (@r82labs-ronan), you have several options:
+If you are the sole maintainer creating your own PRs manually, you have several options:
 
 #### Option 1: Temporarily Disable CODEOWNERS Review (Recommended for Solo Projects)
 1. Go to **Settings** → **Branches** → **Branch protection rules** for `main`
