@@ -1,6 +1,77 @@
 # datelib
 A C++ library of date utilities
 
+## Releases
+
+### Downloading Releases
+
+Pre-built releases are available on the [GitHub Releases page](https://github.com/datelib/datelib/releases). Each release includes:
+- Compiled library files (`.so` for Linux)
+- Public header files
+- LICENSE file
+- Installation instructions
+
+### Using Release Artifacts
+
+1. **Download the release archive** for your platform (e.g., `datelib-1.0.0-linux-x86_64.tar.gz`)
+
+2. **Extract the archive:**
+   ```bash
+   tar -xzf datelib-1.0.0-linux-x86_64.tar.gz
+   cd datelib-1.0.0
+   ```
+
+3. **Install to your system** (optional):
+   ```bash
+   sudo cp -r include/datelib /usr/local/include/
+   sudo cp lib/libdatelib.so* /usr/local/lib/
+   sudo ldconfig
+   ```
+
+4. **Use in your CMake project:**
+   ```cmake
+   # If installed system-wide
+   find_library(DATELIB_LIBRARY datelib)
+   target_link_libraries(your_target PRIVATE ${DATELIB_LIBRARY})
+   
+   # Or specify the path directly
+   target_include_directories(your_target PRIVATE /path/to/datelib/include)
+   target_link_libraries(your_target PRIVATE /path/to/datelib/lib/libdatelib.so)
+   ```
+
+### Creating a Release
+
+Releases are created through GitHub Actions using semantic versioning (MAJOR.MINOR.PATCH).
+
+**To create a new release:**
+
+1. Go to the **Actions** tab in the GitHub repository
+2. Select the **Release** workflow
+3. Click **Run workflow**
+4. Choose the version bump type:
+   - **patch** (1.0.0 → 1.0.1): Bug fixes and minor changes
+   - **minor** (1.0.0 → 1.1.0): New features, backwards compatible
+   - **major** (1.0.0 → 2.0.0): Breaking changes
+5. Click **Run workflow**
+
+The workflow will automatically:
+- Update the version in `CMakeLists.txt`
+- Commit the version change
+- Create and push a git tag (e.g., `v1.0.1`)
+- Build the library
+- Package artifacts (library + headers + LICENSE)
+- Create a GitHub release with downloadable artifacts
+
+### Versioning Strategy
+
+This project follows [Semantic Versioning](https://semver.org/):
+
+- **MAJOR** version: Incompatible API changes
+- **MINOR** version: Backwards-compatible functionality additions
+- **PATCH** version: Backwards-compatible bug fixes
+
+The version is defined in `CMakeLists.txt` and serves as the single source of truth.
+
 ## Development Setup
 
 ### Prerequisites
