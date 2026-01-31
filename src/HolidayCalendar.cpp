@@ -38,11 +38,7 @@ bool HolidayCalendar::isHoliday(const year_month_day& date) const {
     int year = static_cast<int>(date.year());
 
     return std::any_of(rules_.begin(), rules_.end(), [&](const auto& rule) {
-        try {
-            return rule->calculateDate(year) == date;
-        } catch (...) {
-            return false;
-        }
+        return rule->appliesTo(year) && rule->calculateDate(year) == date;
     });
 }
 
@@ -50,12 +46,10 @@ std::vector<year_month_day> HolidayCalendar::getHolidays(int year) const {
     std::vector<year_month_day> holidays;
     holidays.reserve(rules_.size());
 
-    // Collect all holidays from rules
+    // Collect all holidays from rules that apply to this year
     std::for_each(rules_.begin(), rules_.end(), [&](const auto& rule) {
-        try {
+        if (rule->appliesTo(year)) {
             holidays.push_back(rule->calculateDate(year));
-        } catch (...) {
-            // Rule not applicable for this year
         }
     });
 
@@ -71,12 +65,8 @@ std::vector<std::string> HolidayCalendar::getHolidayNames(const year_month_day& 
     int year = static_cast<int>(date.year());
 
     std::for_each(rules_.begin(), rules_.end(), [&](const auto& rule) {
-        try {
-            if (rule->calculateDate(year) == date) {
-                names.push_back(rule->getName());
-            }
-        } catch (...) {
-            // Rule not applicable for this year
+        if (rule->appliesTo(year) && rule->calculateDate(year) == date) {
+            names.push_back(rule->getName());
         }
     });
 

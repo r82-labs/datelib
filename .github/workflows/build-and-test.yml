@@ -112,12 +112,10 @@ jobs:
         # Capture coverage data
         lcov --capture --directory . --output-file coverage.info
 
-        # Remove system headers, test files, Catch2, and header files from coverage
+        # Remove system headers, test files, and Catch2 from coverage
         # --ignore-errors unused: Prevents errors when a removal pattern doesn't match any files
         # This is expected when build dependencies change or certain patterns are not present
-        # Header files are excluded because inline functions and virtual destructors
-        # can cause coverage tool artifacts that don't reflect actual code coverage
-        lcov --remove coverage.info '/usr/*' '*/tests/*' '*/_deps/*' '*/include/*' --output-file coverage_filtered.info --ignore-errors unused
+        lcov --remove coverage.info '/usr/*' '*/tests/*' '*/_deps/*' --output-file coverage_filtered.info --ignore-errors unused
 
         # Verify filtered coverage file exists and is valid
         if [ ! -s coverage_filtered.info ]; then
