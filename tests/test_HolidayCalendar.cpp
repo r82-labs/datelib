@@ -198,3 +198,44 @@ TEST_CASE("Real-world US holidays example", "[HolidayCalendar]") {
         REQUIRE(names[0] == "Thanksgiving");
     }
 }
+
+// Custom buggy rule for testing exception handling
+class BuggyHolidayRule : public datelib::HolidayRule {
+  public:
+    BuggyHolidayRule() = default;
+
+    bool appliesTo(int /* year */) const override {
+        // Always says it applies
+        return true;
+    }
+
+    year_month_day calculateDate(int /* year */) const override {
+        // But then throws when asked to calculate
+        throw std::runtime_error("Buggy rule");
+    }
+
+    std::string getName() const override { return "Buggy Holiday"; }
+
+    std::unique_ptr<HolidayRule> clone() const override {
+        return std::make_unique<BuggyHolidayRule>();
+    }
+};
+
+TEST_CASE("HolidayCalendar handles buggy rules gracefully", "[HolidayCalendar][exception]") {
+    datelib::HolidayCalendar calendar;
+
+    // Add a normal rule
+    calendar.addHoliday("New Year", year_month_day{year{2024}, month{1}, day{1}});
+
+    // Add a buggy rule that throws exceptions
+    calendar.addRule(std::make_unique<BuggyHolidayRule>());
+
+    SECTION("isHoliday handles exception from buggy rule") {
+        // The buggy rule should not crash isHoliday
+        // It should return false for dates that don't match the good rule
+        REQUIRE_FALSE(calendar.isHoliday(year_month_day{year{2024}, month{1}, day{2}}));
+
+        // And should still return true for dates that match the good rule
+        REQUIRE(calendar.isHoliday(year_month_day{year{2024}, month{1}, day{1}}));
+    }
+}

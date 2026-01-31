@@ -528,3 +528,55 @@ TEST_CASE("adjust with invalid enum value", "[adjust][edge_cases]") {
         REQUIRE_THROWS_AS(datelib::adjust(date, invalid_convention, calendar), std::logic_error);
     }
 }
+
+TEST_CASE("adjust with pathological calendar throws after MAX_DAYS_TO_SEARCH",
+          "[adjust][edge_cases]") {
+    // Create a calendar where every single day for multiple years is a holiday
+    datelib::HolidayCalendar allHolidaysCalendar;
+
+    // Add all days for 2023, 2024, and 2025 as holidays to prevent finding
+    // business days in adjacent years
+    for (int y = 2023; y <= 2025; ++y) {
+        for (unsigned m = 1; m <= 12; ++m) {
+            unsigned days_in_month = 31;
+            if (m == 2)
+                days_in_month = (y == 2024) ? 29 : 28; // Leap year check
+            else if (m == 4 || m == 6 || m == 9 || m == 11)
+                days_in_month = 30;
+
+            for (unsigned d = 1; d <= days_in_month; ++d) {
+                allHolidaysCalendar.addHoliday("Holiday",
+                                               year_month_day{year{y}, month{m}, day{d}});
+            }
+        }
+    }
+
+    // Use a Saturday (weekend) as the starting date so it's definitely not a business day
+    auto date = year_month_day{year{2024}, month{1}, day{6}}; // Saturday
+
+    SECTION("Following convention throws when no business day found") {
+        REQUIRE_THROWS_WITH(
+            datelib::adjust(date, datelib::BusinessDayConvention::Following, allHolidaysCalendar),
+            "Unable to find next business day within reasonable range");
+    }
+
+    SECTION("Preceding convention throws when no business day found") {
+        REQUIRE_THROWS_WITH(
+            datelib::adjust(date, datelib::BusinessDayConvention::Preceding, allHolidaysCalendar),
+            "Unable to find previous business day within reasonable range");
+    }
+
+    SECTION("ModifiedFollowing throws on forward search") {
+        // ModifiedFollowing will first try going forward, which should hit the limit
+        REQUIRE_THROWS_WITH(datelib::adjust(date, datelib::BusinessDayConvention::ModifiedFollowing,
+                                            allHolidaysCalendar),
+                            "Unable to find next business day within reasonable range");
+    }
+
+    SECTION("ModifiedPreceding throws on backward search") {
+        // ModifiedPreceding will first try going backward, which should hit the limit
+        REQUIRE_THROWS_WITH(datelib::adjust(date, datelib::BusinessDayConvention::ModifiedPreceding,
+                                            allHolidaysCalendar),
+                            "Unable to find previous business day within reasonable range");
+    }
+}
