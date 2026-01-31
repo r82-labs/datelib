@@ -60,42 +60,42 @@ jobs:
         TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
         
         # Create/update the API index page
-        cat > wiki/API.md << 'EOF'
-# API Documentation
-
-This page contains the auto-generated API documentation for the datelib C++ library.
-
-## Viewing the Documentation
-
-The full API documentation is available in the [API](API) directory.
-
-### Quick Links
-
-- [Main Page](API/index.html)
-- [Classes](API/annotated.html)
-- [Files](API/files.html)
-- [Namespaces](API/namespaces.html)
-
-## Documentation Contents
-
-The datelib library provides the following main components:
-
-### Core Classes
-
-- **HolidayRule** - Abstract base class for holiday calculation rules
-- **HolidayCalendar** - Calendar for managing holidays
-- **ExplicitDateRule** - Rule for explicit one-time holidays
-- **FixedDateRule** - Rule for fixed annual holidays
-- **NthWeekdayRule** - Rule for holidays on specific weekday occurrences
-
-### Functions
-
-- **isBusinessDay()** - Check if a date is a business day
-
----
-
-*Documentation auto-generated from code comments using Doxygen.*
-EOF
+        cat > wiki/API.md << EOF
+        # API Documentation
+        
+        This page contains the auto-generated API documentation for the datelib C++ library.
+        
+        ## Viewing the Documentation
+        
+        The full API documentation is available in the [API](API) directory.
+        
+        ### Quick Links
+        
+        - [Main Page](API/index.html)
+        - [Classes](API/annotated.html)
+        - [Files](API/files.html)
+        - [Namespaces](API/namespaces.html)
+        
+        ## Documentation Contents
+        
+        The datelib library provides the following main components:
+        
+        ### Core Classes
+        
+        - **HolidayRule** - Abstract base class for holiday calculation rules
+        - **HolidayCalendar** - Calendar for managing holidays
+        - **ExplicitDateRule** - Rule for explicit one-time holidays
+        - **FixedDateRule** - Rule for fixed annual holidays
+        - **NthWeekdayRule** - Rule for holidays on specific weekday occurrences
+        
+        ### Functions
+        
+        - **isBusinessDay()** - Check if a date is a business day
+        
+        ---
+        
+        *Documentation auto-generated from code comments using Doxygen.*
+        EOF
         echo "*Last updated: $TIMESTAMP*" >> wiki/API.md
     
     - name: Commit and push to Wiki
