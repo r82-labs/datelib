@@ -39,6 +39,8 @@ jobs:
         doxygen Doxyfile
         
     - name: Checkout Wiki
+      id: checkout-wiki
+      continue-on-error: true
       uses: actions/checkout@v4
       with:
         repository: ${{ github.repository }}.wiki
@@ -46,6 +48,7 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
     
     - name: Copy documentation to Wiki
+      if: steps.checkout-wiki.outcome == 'success'
       run: |
         # Create API directory in wiki if it doesn't exist
         mkdir -p wiki/API
@@ -99,6 +102,7 @@ jobs:
         echo "*Last updated: $TIMESTAMP*" >> wiki/API.md
     
     - name: Commit and push to Wiki
+      if: steps.checkout-wiki.outcome == 'success'
       run: |
         cd wiki
         git config user.name "github-actions[bot]"
@@ -113,3 +117,14 @@ jobs:
           git push
           echo "Documentation updated successfully"
         fi
+    
+    - name: Wiki not available
+      if: steps.checkout-wiki.outcome != 'success'
+      run: |
+        echo "::notice::Wiki repository is not available. Documentation was generated but not published to Wiki."
+        echo "::notice::To enable Wiki publishing:"
+        echo "::notice::  1. Go to repository Settings"
+        echo "::notice::  2. Enable Wiki under Features section"
+        echo "::notice::  3. Create at least one page in the Wiki"
+        echo "::notice::The generated documentation is available in the 'docs/html' directory."
+
