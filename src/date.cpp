@@ -31,9 +31,8 @@ adjust(const std::chrono::year_month_day& date, BusinessDayConvention convention
         throw std::invalid_argument("Invalid date provided to adjust");
     }
 
-    // If already a business day and not Unadjusted, no adjustment needed
-    if (convention != BusinessDayConvention::Unadjusted &&
-        isBusinessDay(date, calendar, weekend_days)) {
+    // If already a business day, no adjustment needed
+    if (isBusinessDay(date, calendar, weekend_days)) {
         return date;
     }
 
