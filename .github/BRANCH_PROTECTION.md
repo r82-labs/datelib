@@ -58,7 +58,7 @@ To automatically delete branches after pull requests are merged:
 ### Why Does This Happen?
 
 When branch protection is configured with both:
-- "Require approvals: 1" 
+- "Require approvals: 1"
 - "Require review from Code Owners"
 
 GitHub requires at least 1 approval from someone **other than the PR author**. This is an intentional security feature to prevent authors from merging their own code without independent review.
@@ -105,7 +105,7 @@ If you are the sole maintainer creating your own PRs manually (@r82labs-ronan), 
 2. The branch protection rule requires additional status checks that haven't passed yet
 3. You need to explicitly click the "Approve" button in the review section (not just comment)
 
-**Solution**: 
+**Solution**:
 1. Verify you're listed in `.github/CODEOWNERS`
 2. Ensure all required status checks (tests, builds) have passed
 3. Click "Review changes" → "Approve" → "Submit review" in the PR's "Files changed" tab

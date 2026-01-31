@@ -6,7 +6,7 @@ This is a C++ library of date utilities. The repository follows modern C++ best 
 ## Available Custom Agents
 
 ### Architect Agent
-**Role:** Strategic Architect & Orchestrator  
+**Role:** Strategic Architect & Orchestrator
 **Purpose:** Lead Technical Architect and Project Manager that analyzes issues, features, and PRs to delegate work to specialist agents or architect new agent profiles.
 
 **When to use the Architect agent:**
@@ -15,7 +15,7 @@ This is a C++ library of date utilities. The repository follows modern C++ best 
 - Creating new specialized agent profiles for specific tasks
 - High-level project planning and task delegation
 
-**How to invoke:** 
+**How to invoke:**
 Since GitHub Copilot doesn't currently support direct assignment of custom agents to issues via the web UI, you can work with the architect agent in the following ways:
 
 1. **Via Copilot Chat (VS Code, JetBrains, etc.):**

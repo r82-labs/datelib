@@ -12,27 +12,27 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y cmake g++ build-essential lcov
-    
+
     - name: Configure CMake
       run: |
         mkdir -p build
         cd build
         cmake -DENABLE_COVERAGE=ON ..
-    
+
     - name: Build
       run: |
         cd build
         cmake --build . --config Release
-    
+
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
@@ -43,24 +43,24 @@ jobs:
   test:
     runs-on: ubuntu-latest
     needs: build
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Download build artifacts
       uses: actions/download-artifact@v4
       with:
         name: build-artifacts
         path: build/
-    
+
     - name: Run tests
       run: |
         cd build
         # Make test executables executable (artifacts may lose permissions)
         chmod -R +x tests/ 2>/dev/null || true
         ctest --output-on-failure --verbose
-    
+
     - name: Upload test artifacts with coverage data
       uses: actions/upload-artifact@v4
       with:
@@ -71,71 +71,71 @@ jobs:
   coverage:
     runs-on: ubuntu-latest
     needs: test
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Install lcov
       run: |
         sudo apt-get update
         sudo apt-get install -y lcov
-      
+
     - name: Download test artifacts
       uses: actions/download-artifact@v4
       with:
         name: test-artifacts
         path: build/
-    
+
     - name: Generate coverage report
       run: |
         cd build
         # Capture coverage data
         lcov --capture --directory . --output-file coverage.info
-        
+
         # Remove system headers, test files, and Catch2 from coverage
         # --ignore-errors unused: Prevents errors when a removal pattern doesn't match any files
         # This is expected when build dependencies change or certain patterns are not present
         lcov --remove coverage.info '/usr/*' '*/tests/*' '*/_deps/*' --output-file coverage_filtered.info --ignore-errors unused
-        
+
         # Verify filtered coverage file exists and is valid
         if [ ! -s coverage_filtered.info ]; then
           echo "ERROR: Coverage filtering produced empty or missing file"
           exit 1
         fi
-        
+
         # Generate summary
         lcov --list coverage_filtered.info
-    
+
     - name: Check coverage threshold
       run: |
         cd build
         # Extract coverage percentage with validation
         # Expected format: "  lines......: 100.0% (2 of 2 lines)"
         COVERAGE_LINE=$(lcov --summary coverage_filtered.info 2>&1 | grep "^\s*lines")
-        
+
         if [ -z "$COVERAGE_LINE" ]; then
           echo "ERROR: Could not find coverage summary in lcov output"
           exit 1
         fi
-        
+
         COVERAGE=$(echo "$COVERAGE_LINE" | awk '{print $2}' | sed 's/%//')
-        
+
         # Validate that COVERAGE is a valid number
         if ! [[ "$COVERAGE" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
           echo "ERROR: Extracted coverage value '$COVERAGE' is not a valid number"
           exit 1
         fi
-        
+
         echo "Coverage: $COVERAGE%"
-        
+
         # Check if coverage meets threshold using awk
         THRESHOLD=100
         CHECK=$(awk -v cov="$COVERAGE" -v thr="$THRESHOLD" 'BEGIN { if (cov < thr) print "FAIL"; else print "PASS" }')
-        
+
         if [ "$CHECK" = "FAIL" ]; then
           echo "ERROR: Coverage is $COVERAGE%, which is below the required $THRESHOLD%"
           exit 1
         fi
-        
+
         echo "SUCCESS: Coverage is $COVERAGE%, meeting the $THRESHOLD% requirement"

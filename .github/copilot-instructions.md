@@ -78,11 +78,11 @@ cd build && ctest --output-on-failure
   - Use `snake_case` for function and variable names
   - Use `PascalCase` for class names
   - Use `UPPER_CASE` for constants and macros
-  
+
 - **Documentation**:
   - Add Doxygen-style comments for public APIs
   - Document function parameters, return values, and exceptions
-  
+
 - **Modern C++**:
   - Target C++17 as minimum standard (or newer)
   - Use RAII for resource management
