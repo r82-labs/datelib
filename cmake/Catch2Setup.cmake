@@ -1,4 +1,4 @@
-# Catch2 Setup This file configures the Catch2 testing framework
+# Catch2 Setup - This file configures the Catch2 testing framework
 
 include(FetchContent)
 FetchContent_Declare(
