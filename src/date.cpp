@@ -2,8 +2,6 @@
 
 #include "datelib/HolidayCalendar.h"
 
-#include <stdexcept>
-
 namespace datelib {
 
 namespace {
@@ -22,7 +20,8 @@ moveToNextBusinessDay(const std::chrono::year_month_day& start, const HolidayCal
 
     while (!isBusinessDay(adjusted_ymd, calendar, weekend_days)) {
         if (++iterations > MAX_DAYS_TO_SEARCH) {
-            throw std::runtime_error("Unable to find next business day within reasonable range");
+            throw BusinessDaySearchException(
+                "Unable to find next business day within reasonable range");
         }
         adjusted += std::chrono::days{1};
         adjusted_ymd = std::chrono::year_month_day{adjusted};
@@ -43,7 +42,7 @@ std::chrono::year_month_day moveToPreviousBusinessDay(
 
     while (!isBusinessDay(adjusted_ymd, calendar, weekend_days)) {
         if (++iterations > MAX_DAYS_TO_SEARCH) {
-            throw std::runtime_error(
+            throw BusinessDaySearchException(
                 "Unable to find previous business day within reasonable range");
         }
         adjusted -= std::chrono::days{1};
@@ -87,11 +86,12 @@ adjust(const std::chrono::year_month_day& date, BusinessDayConvention convention
     }
 
     // Apply the convention
+    using enum BusinessDayConvention;
     switch (convention) {
-    case BusinessDayConvention::Following:
+    case Following:
         return moveToNextBusinessDay(date, calendar, weekend_days);
 
-    case BusinessDayConvention::ModifiedFollowing: {
+    case ModifiedFollowing: {
         auto adjusted = moveToNextBusinessDay(date, calendar, weekend_days);
         // If we crossed into a new month, go backward instead
         if (adjusted.month() != date.month()) {
@@ -100,10 +100,10 @@ adjust(const std::chrono::year_month_day& date, BusinessDayConvention convention
         return adjusted;
     }
 
-    case BusinessDayConvention::Preceding:
+    case Preceding:
         return moveToPreviousBusinessDay(date, calendar, weekend_days);
 
-    case BusinessDayConvention::ModifiedPreceding: {
+    case ModifiedPreceding: {
         auto adjusted = moveToPreviousBusinessDay(date, calendar, weekend_days);
         // If we crossed into a different month, go forward instead
         if (adjusted.month() != date.month()) {
@@ -112,7 +112,7 @@ adjust(const std::chrono::year_month_day& date, BusinessDayConvention convention
         return adjusted;
     }
 
-    case BusinessDayConvention::Unadjusted:
+    case Unadjusted:
         // Return the date unchanged
         return date;
     }

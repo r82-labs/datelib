@@ -3,12 +3,21 @@
 #include "datelib/date_util.h"
 
 #include <chrono>
+#include <stdexcept>
 #include <unordered_set>
 
 namespace datelib {
 
 // Forward declaration
 class HolidayCalendar;
+
+/**
+ * @brief Exception thrown when unable to find a business day within a reasonable range
+ */
+class BusinessDaySearchException : public std::runtime_error {
+  public:
+    explicit BusinessDaySearchException(const std::string& message) : std::runtime_error(message) {}
+};
 
 /**
  * @brief Business day adjustment conventions for date rolling
@@ -63,6 +72,7 @@ isBusinessDay(const std::chrono::year_month_day& date, const HolidayCalendar& ca
  * @param weekend_days The set of weekdays considered as weekend (defaults to Saturday and Sunday)
  * @return The adjusted date according to the specified convention
  * @throws std::invalid_argument if the input date is invalid
+ * @throws BusinessDaySearchException if unable to find a business day within reasonable range
  *
  * This function adjusts non-business days according to market conventions:
  * - Following: Moves to the next business day
