@@ -1,0 +1,164 @@
+name: Publish Release
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    # Only run if PR was merged and came from a release branch
+    if: |
+      github.event.pull_request.merged == true &&
+      startsWith(github.event.pull_request.head.ref, 'release/v')
+    
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout merged commit
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        ref: main
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Configure Git
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+    
+    - name: Extract version from CMakeLists.txt
+      id: version
+      run: |
+        # Extract version from CMakeLists.txt
+        VERSION=$(grep -E '^\s*VERSION\s+[0-9]+\.[0-9]+\.[0-9]+' CMakeLists.txt | awk '{print $2}')
+        
+        if [ -z "$VERSION" ]; then
+          echo "ERROR: Could not extract version from CMakeLists.txt"
+          exit 1
+        fi
+        
+        echo "Version: $VERSION"
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+    
+    - name: Create and push tag
+      run: |
+        git tag -a "v${{ steps.version.outputs.version }}" -m "Release version ${{ steps.version.outputs.version }}"
+        git push origin "v${{ steps.version.outputs.version }}"
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake g++ build-essential
+    
+    - name: Build library for Linux
+      run: |
+        mkdir -p build-linux
+        cd build-linux
+        cmake -DCMAKE_BUILD_TYPE=Release ..
+        cmake --build . --config Release
+    
+    - name: Prepare release artifacts
+      run: |
+        # Create release directory
+        mkdir -p release/datelib-${{ steps.version.outputs.version }}
+        
+        # Copy library files
+        mkdir -p release/datelib-${{ steps.version.outputs.version }}/lib
+        cp build-linux/libdatelib.so* release/datelib-${{ steps.version.outputs.version }}/lib/ || true
+        
+        # Copy headers
+        mkdir -p release/datelib-${{ steps.version.outputs.version }}/include
+        cp -r include/datelib release/datelib-${{ steps.version.outputs.version }}/include/
+        
+        # Copy LICENSE
+        cp LICENSE release/datelib-${{ steps.version.outputs.version }}/
+        
+        # Create README for the release
+        cat > release/datelib-${{ steps.version.outputs.version }}/README.txt << EOF
+        datelib v${{ steps.version.outputs.version }}
+        
+        C++ library of date utilities
+        
+        This package contains:
+        - lib/: Compiled shared library files
+        - include/datelib/: Public header files
+        - LICENSE: Apache 2.0 license
+        
+        To use this library in your project:
+        1. Copy the include/datelib directory to your include path
+        2. Copy the lib/libdatelib.so to your library path
+        3. Link against libdatelib in your build system
+        
+        For more information, visit: https://github.com/${{ github.repository }}
+        EOF
+        
+        # Create tarball
+        cd release
+        tar -czf datelib-${{ steps.version.outputs.version }}-linux-x86_64.tar.gz datelib-${{ steps.version.outputs.version }}
+        
+        # Create zip archive
+        zip -r datelib-${{ steps.version.outputs.version }}-linux-x86_64.zip datelib-${{ steps.version.outputs.version }}
+    
+    - name: Generate release notes
+      id: release_notes
+      run: |
+        # Get commits since last tag
+        LAST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+        
+        if [ -z "$LAST_TAG" ]; then
+          COMMITS=$(git log --pretty=format:"- %s (%h)" --no-merges)
+        else
+          COMMITS=$(git log ${LAST_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges)
+        fi
+        
+        # Create release notes
+        cat > release_notes.md << EOF
+        # Release v${{ steps.version.outputs.version }}
+        
+        This release of datelib includes the following changes.
+        
+        ## Changes
+        $COMMITS
+        
+        ## Installation
+        
+        Download the appropriate artifact for your platform and extract it.
+        
+        ### Linux
+        \`\`\`bash
+        tar -xzf datelib-${{ steps.version.outputs.version }}-linux-x86_64.tar.gz
+        \`\`\`
+        
+        ## Usage
+        
+        Include the headers in your project:
+        \`\`\`cpp
+        #include <datelib/date.h>
+        \`\`\`
+        
+        Link against the library in your build system (CMake example):
+        \`\`\`cmake
+        target_link_libraries(your_target PRIVATE datelib)
+        \`\`\`
+        EOF
+        
+        echo "Release notes generated"
+    
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v${{ steps.version.outputs.version }}
+        name: Release v${{ steps.version.outputs.version }}
+        body_path: release_notes.md
+        draft: false
+        prerelease: false
+        files: |
+          release/datelib-${{ steps.version.outputs.version }}-linux-x86_64.tar.gz
+          release/datelib-${{ steps.version.outputs.version }}-linux-x86_64.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
