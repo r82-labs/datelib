@@ -87,7 +87,7 @@ jobs:
 
           # Update sonar-project.properties if it exists
           if [ -f sonar-project.properties ]; then
-            sed -i 's/sonar.projectVersion=${{ steps.version.outputs.current_version }}/sonar.projectVersion=${{ steps.version.outputs.new_version }}/' sonar-project.properties
+            sed -i 's/^sonar\.projectVersion=.*/sonar.projectVersion=${{ steps.version.outputs.new_version }}/' sonar-project.properties
 
             # Verify the change
             if ! grep -q "sonar.projectVersion=${{ steps.version.outputs.new_version }}" sonar-project.properties; then
