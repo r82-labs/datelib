@@ -17,16 +17,21 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       
-    - name: Install clang-format
+    - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y clang-format
+        sudo apt-get install -y cmake clang-format
+    
+    - name: Configure CMake
+      run: |
+        mkdir -p build
+        cd build
+        cmake ..
     
     - name: Check code formatting
       run: |
-        # Find all C++ source and header files
-        find src include tests -type f \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) \
-          -exec clang-format --dry-run --Werror {} +
+        cd build
+        cmake --build . --target format-check
 
   build:
     runs-on: ubuntu-latest
