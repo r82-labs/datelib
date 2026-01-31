@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 jobs:
-  publish:
+  release-publish:
     # Only run if PR was merged and came from a release branch
     if: |
       github.event.pull_request.merged == true &&
@@ -164,6 +164,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   
   generate-docs:
-    needs: publish
+    needs: release-publish
     uses: ./.github/workflows/generate-docs.yml
     secrets: inherit
