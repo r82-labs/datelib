@@ -23,7 +23,7 @@ jobs:
     
     - name: Generate documentation
       run: |
-        # Extract version from CMakeLists.txt
+        # Extract version from CMakeLists.txt using Perl regex (available in Ubuntu)
         VERSION=$(grep -oP '(?<=VERSION )\d+\.\d+\.\d+' CMakeLists.txt | head -1)
         
         # Validate version extraction
