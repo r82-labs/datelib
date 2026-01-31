@@ -106,9 +106,9 @@ jobs:
           --title "Release v${{ steps.version.outputs.new_version }}" \
           --body "Automated version bump to ${{ steps.version.outputs.new_version }} (${{ inputs.bump_type }} release)
 
-        This PR bumps the version in CMakeLists.txt from ${{ steps.version.outputs.current_version }} to ${{ steps.version.outputs.new_version }}.
+This PR bumps the version in CMakeLists.txt from ${{ steps.version.outputs.current_version }} to ${{ steps.version.outputs.new_version }}.
 
-        After merging, the release will be automatically published by the release-publish workflow."
+After merging, the release will be automatically published by the release-publish workflow."
         
         echo "✅ Pull request created successfully"
         PR_URL=$(gh pr view release/v${{ steps.version.outputs.new_version }} --json url -q .url)
