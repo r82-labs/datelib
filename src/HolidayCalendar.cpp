@@ -1,6 +1,7 @@
 #include "datelib/HolidayCalendar.h"
 
 #include <algorithm>
+#include <ranges>
 
 namespace datelib {
 
@@ -54,7 +55,7 @@ std::vector<year_month_day> HolidayCalendar::getHolidays(int year) const {
     }
 
     // Sort and remove duplicates
-    std::sort(holidays.begin(), holidays.end());
+    std::ranges::sort(holidays);
     holidays.erase(std::unique(holidays.begin(), holidays.end()), holidays.end());
 
     return holidays;
