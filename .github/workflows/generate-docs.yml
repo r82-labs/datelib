@@ -23,6 +23,12 @@ jobs:
     
     - name: Generate documentation
       run: |
+        # Extract version from CMakeLists.txt
+        VERSION=$(grep -oP '(?<=VERSION )\d+\.\d+\.\d+' CMakeLists.txt | head -1)
+        
+        # Update Doxyfile with the current version
+        sed -i "s/PROJECT_NUMBER.*/PROJECT_NUMBER         = $VERSION/" Doxyfile
+        
         doxygen Doxyfile
         
     - name: Checkout Wiki
@@ -43,8 +49,11 @@ jobs:
         # Copy generated HTML documentation to wiki
         cp -r docs/html/* wiki/API/
         
+        # Get current timestamp
+        TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+        
         # Create/update the API index page
-        cat > wiki/API.md << 'EOF'
+        cat > wiki/API.md << EOF
         # API Documentation
         
         This page contains the auto-generated API documentation for the datelib C++ library.
@@ -79,7 +88,7 @@ jobs:
         ---
         
         *Documentation auto-generated from code comments using Doxygen.*
-        *Last updated: $(date -u +"%Y-%m-%d %H:%M:%S UTC")*
+        *Last updated: $TIMESTAMP*
         EOF
     
     - name: Commit and push to Wiki
