@@ -166,4 +166,5 @@ jobs:
   generate-docs:
     needs: release-publish
     uses: ./.github/workflows/generate-docs.yml
-    secrets: inherit
+    secrets:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
