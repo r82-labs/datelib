@@ -47,19 +47,22 @@ Date NthWeekdayRule::calculateDate(int year) const {
     int daysToAdd = (weekday_ - firstWeekday + 7) % 7;
     int firstOccurrenceDay = 1 + daysToAdd;
 
+    // Helper lambda to get days in month (same as Date::daysInMonth logic)
+    auto getDaysInMonth = [](int y, int m) -> int {
+        static const int days[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+        int result = days[m - 1];
+        if (m == 2 && ((y % 4 == 0) && ((y % 100 != 0) || (y % 400 == 0)))) {
+            result = 29;
+        }
+        return result;
+    };
+
     if (occurrence_ > 0) {
         // Nth occurrence from the start
         int targetDay = firstOccurrenceDay + (occurrence_ - 1) * 7;
 
         // Validate that this day exists in the month
-        int daysInMonth = [year, month = month_]() {
-            static const int days[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-            int result = days[month - 1];
-            if (month == 2 && ((year % 4 == 0) && ((year % 100 != 0) || (year % 400 == 0)))) {
-                result = 29;
-            }
-            return result;
-        }();
+        int daysInMonth = getDaysInMonth(year, month_);
 
         if (targetDay > daysInMonth) {
             throw std::runtime_error("Requested occurrence does not exist in this month");
@@ -69,14 +72,7 @@ Date NthWeekdayRule::calculateDate(int year) const {
     } else {
         // Last occurrence (occurrence_ == -1)
         // Start from the last day of the month and work backwards
-        int daysInMonth = [year, month = month_]() {
-            static const int days[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-            int result = days[month - 1];
-            if (month == 2 && ((year % 4 == 0) && ((year % 100 != 0) || (year % 400 == 0)))) {
-                result = 29;
-            }
-            return result;
-        }();
+        int daysInMonth = getDaysInMonth(year, month_);
 
         Date lastDay(year, month_, daysInMonth);
         int lastWeekday = lastDay.dayOfWeek();

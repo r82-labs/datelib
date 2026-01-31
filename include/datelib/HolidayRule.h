@@ -18,8 +18,8 @@ class HolidayRule {
     /**
      * @brief Calculate the holiday date for a given year
      * @param year The year to calculate the holiday for
-     * @return The date of the holiday in that year, or nullptr if not
-     * applicable
+     * @return The date of the holiday in that year
+     * @throws std::exception if the rule cannot be applied to this year
      */
     virtual Date calculateDate(int year) const = 0;
 

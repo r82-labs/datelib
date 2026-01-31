@@ -90,7 +90,7 @@ std::vector<std::string> HolidayCalendar::getHolidayNames(const Date& date) cons
 
     // Check if it's an explicit holiday (no name stored for these)
     if (explicitHolidays_.find(date) != explicitHolidays_.end()) {
-        names.push_back("Holiday");
+        names.push_back("Custom Holiday");
     }
 
     // Check rule-based holidays
