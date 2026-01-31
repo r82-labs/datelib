@@ -45,22 +45,31 @@ Releases are created through GitHub Actions using semantic versioning (MAJOR.MIN
 
 **To create a new release:**
 
-1. Go to the **Actions** tab in the GitHub repository
-2. Select the **Release** workflow
-3. Click **Run workflow**
-4. Choose the version bump type:
-   - **patch** (1.0.0 → 1.0.1): Bug fixes and minor changes
-   - **minor** (1.0.0 → 1.1.0): New features, backwards compatible
-   - **major** (1.0.0 → 2.0.0): Breaking changes
-5. Click **Run workflow**
+1. **Trigger the release preparation:**
+   - Go to the **Actions** tab in the GitHub repository
+   - Select the **Prepare Release** workflow
+   - Click **Run workflow**
+   - Choose the version bump type:
+     - **patch** (1.0.0 → 1.0.1): Bug fixes and minor changes
+     - **minor** (1.0.0 → 1.1.0): New features, backwards compatible
+     - **major** (1.0.0 → 2.0.0): Breaking changes
+   - Click **Run workflow**
 
-The workflow will automatically:
-- Update the version in `CMakeLists.txt`
-- Commit the version change
-- Create and push a git tag (e.g., `v1.0.1`)
-- Build the library
-- Package artifacts (library + headers + LICENSE)
-- Create a GitHub release with downloadable artifacts
+2. **Review and merge the release PR:**
+   - The workflow will create a Pull Request with the version bump
+   - Review the changes in the PR
+   - Merge the PR to `main`
+
+3. **Automatic release publication:**
+   - After merging, the **Publish Release** workflow runs automatically
+   - It will:
+     - Create and push a git tag (e.g., `v1.0.1`)
+     - Build the library
+     - Package artifacts (library + headers + LICENSE)
+     - Create a GitHub release with downloadable artifacts
+
+> **Why a two-step process?**
+> This approach provides a safety checkpoint where you can review the version bump before it's published. If you need to include additional changes or fix issues, you can do so before merging the release PR.
 
 ### Versioning Strategy
 
