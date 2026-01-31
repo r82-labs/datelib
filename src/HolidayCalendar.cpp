@@ -37,7 +37,7 @@ void HolidayCalendar::addRule(std::unique_ptr<HolidayRule> rule) {
 bool HolidayCalendar::isHoliday(const year_month_day& date) const {
     int year = static_cast<int>(date.year());
 
-    return std::any_of(rules_.begin(), rules_.end(), [&](const auto& rule) {
+    return std::ranges::any_of(rules_, [&](const auto& rule) {
         return rule->appliesTo(year) && rule->calculateDate(year) == date;
     });
 }
