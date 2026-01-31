@@ -1,6 +1,7 @@
 #include "datelib/date.h"
 
 #include "datelib/HolidayCalendar.h"
+#include "datelib/period.h"
 
 namespace datelib {
 
@@ -120,6 +121,96 @@ adjust(const std::chrono::year_month_day& date, BusinessDayConvention convention
     // This should never be reached as all enum values are handled above
     // If we reach here, it's a logic error (e.g., uninitialized enum)
     throw std::logic_error("Unhandled BusinessDayConvention in adjust()");
+}
+
+std::chrono::year_month_day
+advance(const std::chrono::year_month_day& date, const Period& period,
+        BusinessDayConvention convention, const HolidayCalendar& calendar,
+        const std::unordered_set<std::chrono::weekday, WeekdayHash>& weekend_days) {
+    // Validate the input date
+    if (!date.ok()) {
+        throw std::invalid_argument("Invalid date provided to advance");
+    }
+
+    std::chrono::year_month_day result_date = date;
+
+    // Advance the date based on the period unit
+    switch (period.unit()) {
+    case Period::Unit::Days:
+        // Add days directly
+        result_date = std::chrono::year_month_day{std::chrono::sys_days{date} +
+                                                  std::chrono::days{period.value()}};
+        break;
+
+    case Period::Unit::Weeks:
+        // Add weeks (7 days per week)
+        result_date = std::chrono::year_month_day{std::chrono::sys_days{date} +
+                                                  std::chrono::days{period.value() * 7}};
+        break;
+
+    case Period::Unit::Months: {
+        // Add months (calendar-aware)
+        auto y = date.year();
+        auto m = date.month();
+        auto d = date.day();
+
+        // Calculate new month/year
+        int total_months = static_cast<int>(static_cast<unsigned>(m)) + period.value();
+
+        // Handle month overflow/underflow
+        int year_offset = 0;
+        while (total_months > 12) {
+            total_months -= 12;
+            year_offset++;
+        }
+        while (total_months < 1) {
+            total_months += 12;
+            year_offset--;
+        }
+
+        auto new_year = y + std::chrono::years{year_offset};
+        auto new_month = std::chrono::month{static_cast<unsigned>(total_months)};
+
+        // Handle day overflow (e.g., Jan 31 + 1M = Feb 28/29, not Feb 31)
+        result_date = std::chrono::year_month_day{new_year, new_month, d};
+        if (!result_date.ok()) {
+            // Day is invalid for this month, use last day of month
+            result_date = std::chrono::year_month_day{new_year / new_month / std::chrono::last};
+        }
+        break;
+    }
+
+    case Period::Unit::Years: {
+        // Add years (calendar-aware)
+        auto y = date.year();
+        auto m = date.month();
+        auto d = date.day();
+
+        auto new_year = y + std::chrono::years{period.value()};
+
+        // Handle leap year edge case (Feb 29 -> Feb 28 in non-leap year)
+        result_date = std::chrono::year_month_day{new_year, m, d};
+        if (!result_date.ok()) {
+            // Day is invalid for this year/month (e.g., Feb 29 in non-leap year)
+            result_date = std::chrono::year_month_day{new_year / m / std::chrono::last};
+        }
+        break;
+    }
+    }
+
+    // Apply business day convention to the result
+    return adjust(result_date, convention, calendar, weekend_days);
+}
+
+std::chrono::year_month_day
+advance(const std::chrono::year_month_day& date, const std::string& period,
+        BusinessDayConvention convention, const HolidayCalendar& calendar,
+        const std::unordered_set<std::chrono::weekday, WeekdayHash>& weekend_days) {
+    // Parse the period string
+    Period parsed_period = Period::parse(period);
+
+    // Call the Period-based overload
+    return advance(date, parsed_period, convention, calendar, weekend_days);
 }
 
 } // namespace datelib

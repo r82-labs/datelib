@@ -1,6 +1,7 @@
 #define CATCH_CONFIG_MAIN
 #include "datelib/HolidayCalendar.h"
 #include "datelib/date.h"
+#include "datelib/period.h"
 
 #include "catch2/catch.hpp"
 
@@ -578,5 +579,355 @@ TEST_CASE("adjust with pathological calendar throws after MAX_DAYS_TO_SEARCH",
         REQUIRE_THROWS_WITH(datelib::adjust(date, datelib::BusinessDayConvention::ModifiedPreceding,
                                             allHolidaysCalendar),
                             "Unable to find previous business day within reasonable range");
+    }
+}
+
+TEST_CASE("Period::parse with valid strings", "[period]") {
+    SECTION("Days") {
+        auto period = datelib::Period::parse("5D");
+        REQUIRE(period.value() == 5);
+        REQUIRE(period.unit() == datelib::Period::Unit::Days);
+
+        period = datelib::Period::parse("1d"); // lowercase
+        REQUIRE(period.value() == 1);
+        REQUIRE(period.unit() == datelib::Period::Unit::Days);
+    }
+
+    SECTION("Weeks") {
+        auto period = datelib::Period::parse("2W");
+        REQUIRE(period.value() == 2);
+        REQUIRE(period.unit() == datelib::Period::Unit::Weeks);
+
+        period = datelib::Period::parse("3w"); // lowercase
+        REQUIRE(period.value() == 3);
+        REQUIRE(period.unit() == datelib::Period::Unit::Weeks);
+    }
+
+    SECTION("Months") {
+        auto period = datelib::Period::parse("6M");
+        REQUIRE(period.value() == 6);
+        REQUIRE(period.unit() == datelib::Period::Unit::Months);
+
+        period = datelib::Period::parse("12m"); // lowercase
+        REQUIRE(period.value() == 12);
+        REQUIRE(period.unit() == datelib::Period::Unit::Months);
+    }
+
+    SECTION("Years") {
+        auto period = datelib::Period::parse("10Y");
+        REQUIRE(period.value() == 10);
+        REQUIRE(period.unit() == datelib::Period::Unit::Years);
+
+        period = datelib::Period::parse("1y"); // lowercase
+        REQUIRE(period.value() == 1);
+        REQUIRE(period.unit() == datelib::Period::Unit::Years);
+    }
+
+    SECTION("Large values") {
+        auto period = datelib::Period::parse("365D");
+        REQUIRE(period.value() == 365);
+
+        period = datelib::Period::parse("100Y");
+        REQUIRE(period.value() == 100);
+    }
+}
+
+TEST_CASE("Period::parse with negative values", "[period]") {
+    SECTION("Negative days") {
+        auto period = datelib::Period::parse("-5D");
+        REQUIRE(period.value() == -5);
+        REQUIRE(period.unit() == datelib::Period::Unit::Days);
+    }
+
+    SECTION("Negative months") {
+        auto period = datelib::Period::parse("-6M");
+        REQUIRE(period.value() == -6);
+        REQUIRE(period.unit() == datelib::Period::Unit::Months);
+    }
+}
+
+TEST_CASE("Period::parse with invalid strings", "[period][edge_cases]") {
+    SECTION("Empty string") {
+        REQUIRE_THROWS_WITH(datelib::Period::parse(""), "Period string cannot be empty");
+    }
+
+    SECTION("No numeric value") {
+        REQUIRE_THROWS_WITH(datelib::Period::parse("D"),
+                            "Period string must contain a numeric value: D");
+        REQUIRE_THROWS_WITH(datelib::Period::parse("M"),
+                            "Period string must contain a numeric value: M");
+    }
+
+    SECTION("No unit") {
+        REQUIRE_THROWS_WITH(datelib::Period::parse("10"),
+                            "Period string must end with a single unit character (D/W/M/Y): 10");
+    }
+
+    SECTION("Invalid unit") {
+        REQUIRE_THROWS_WITH(datelib::Period::parse("5X"), Catch::Contains("Invalid period unit"));
+        REQUIRE_THROWS_WITH(datelib::Period::parse("5H"), Catch::Contains("Invalid period unit"));
+    }
+
+    SECTION("Multiple unit characters") {
+        REQUIRE_THROWS_WITH(datelib::Period::parse("5DD"),
+                            "Period string must end with a single unit character (D/W/M/Y): 5DD");
+        REQUIRE_THROWS_WITH(datelib::Period::parse("5DW"),
+                            "Period string must end with a single unit character (D/W/M/Y): 5DW");
+    }
+
+    SECTION("Invalid numeric format") {
+        REQUIRE_THROWS_WITH(datelib::Period::parse("5.5D"),
+                            "Period string must end with a single unit character (D/W/M/Y): 5.5D");
+    }
+}
+
+TEST_CASE("advance with days period", "[advance]") {
+    datelib::HolidayCalendar calendar;
+
+    SECTION("Advance by 5 days with Following convention") {
+        // Tuesday, January 2, 2024 + 5D = Sunday, January 7, 2024
+        // Following adjusts to Monday, January 8, 2024
+        auto date = year_month_day{year{2024}, month{1}, day{2}};
+        auto result =
+            datelib::advance(date, "5D", datelib::BusinessDayConvention::Following, calendar);
+        REQUIRE(result == year_month_day{year{2024}, month{1}, day{8}});
+    }
+
+    SECTION("Advance by 1 day, landing on business day") {
+        // Tuesday, January 2, 2024 + 1D = Wednesday, January 3, 2024 (business day)
+        auto date = year_month_day{year{2024}, month{1}, day{2}};
+        auto result =
+            datelib::advance(date, "1D", datelib::BusinessDayConvention::Following, calendar);
+        REQUIRE(result == year_month_day{year{2024}, month{1}, day{3}});
+    }
+
+    SECTION("Advance by 0 days with Unadjusted") {
+        // Tuesday, January 2, 2024 + 0D = Tuesday, January 2, 2024
+        auto date = year_month_day{year{2024}, month{1}, day{2}};
+        auto result =
+            datelib::advance(date, "0D", datelib::BusinessDayConvention::Unadjusted, calendar);
+        REQUIRE(result == date);
+    }
+}
+
+TEST_CASE("advance with weeks period", "[advance]") {
+    datelib::HolidayCalendar calendar;
+
+    SECTION("Advance by 2 weeks with Following convention") {
+        // Tuesday, January 2, 2024 + 2W = Tuesday, January 16, 2024 (business day)
+        auto date = year_month_day{year{2024}, month{1}, day{2}};
+        auto result =
+            datelib::advance(date, "2W", datelib::BusinessDayConvention::Following, calendar);
+        REQUIRE(result == year_month_day{year{2024}, month{1}, day{16}});
+    }
+
+    SECTION("Advance by 1 week, landing on weekend") {
+        // Monday, January 1, 2024 + 1W = Monday, January 8, 2024 (business day)
+        auto date = year_month_day{year{2024}, month{1}, day{1}};
+        auto result =
+            datelib::advance(date, "1W", datelib::BusinessDayConvention::Following, calendar);
+        REQUIRE(result == year_month_day{year{2024}, month{1}, day{8}});
+    }
+}
+
+TEST_CASE("advance with months period", "[advance]") {
+    datelib::HolidayCalendar calendar;
+
+    SECTION("Advance by 6 months with Following convention") {
+        // Tuesday, January 2, 2024 + 6M = Tuesday, July 2, 2024 (business day)
+        auto date = year_month_day{year{2024}, month{1}, day{2}};
+        auto result =
+            datelib::advance(date, "6M", datelib::BusinessDayConvention::Following, calendar);
+        REQUIRE(result == year_month_day{year{2024}, month{7}, day{2}});
+    }
+
+    SECTION("Advance by 1 month with day overflow") {
+        // January 31, 2024 + 1M = February 29, 2024 (leap year, Thursday, business day)
+        auto date = year_month_day{year{2024}, month{1}, day{31}};
+        auto result =
+            datelib::advance(date, "1M", datelib::BusinessDayConvention::Following, calendar);
+        REQUIRE(result == year_month_day{year{2024}, month{2}, day{29}});
+    }
+
+    SECTION("Advance by 1 month with day overflow in non-leap year") {
+        // January 31, 2023 + 1M = February 28, 2023 (Tuesday, business day)
+        auto date = year_month_day{year{2023}, month{1}, day{31}};
+        auto result =
+            datelib::advance(date, "1M", datelib::BusinessDayConvention::Following, calendar);
+        REQUIRE(result == year_month_day{year{2023}, month{2}, day{28}});
+    }
+
+    SECTION("Advance by 12 months (1 year equivalent)") {
+        // January 15, 2024 + 12M = January 15, 2025 (Wednesday, business day)
+        auto date = year_month_day{year{2024}, month{1}, day{15}};
+        auto result =
+            datelib::advance(date, "12M", datelib::BusinessDayConvention::Following, calendar);
+        REQUIRE(result == year_month_day{year{2025}, month{1}, day{15}});
+    }
+}
+
+TEST_CASE("advance with years period", "[advance]") {
+    datelib::HolidayCalendar calendar;
+
+    SECTION("Advance by 10 years with Following convention") {
+        // Tuesday, January 2, 2024 + 10Y = Thursday, January 2, 2034 (business day)
+        auto date = year_month_day{year{2024}, month{1}, day{2}};
+        auto result =
+            datelib::advance(date, "10Y", datelib::BusinessDayConvention::Following, calendar);
+        REQUIRE(result == year_month_day{year{2034}, month{1}, day{2}});
+    }
+
+    SECTION("Advance by 1 year from leap day") {
+        // February 29, 2024 + 1Y = February 28, 2025 (Friday, business day)
+        auto date = year_month_day{year{2024}, month{2}, day{29}};
+        auto result =
+            datelib::advance(date, "1Y", datelib::BusinessDayConvention::Following, calendar);
+        REQUIRE(result == year_month_day{year{2025}, month{2}, day{28}});
+    }
+
+    SECTION("Advance by 4 years from leap day") {
+        // February 29, 2024 + 4Y = February 29, 2028 (Tuesday, business day)
+        auto date = year_month_day{year{2024}, month{2}, day{29}};
+        auto result =
+            datelib::advance(date, "4Y", datelib::BusinessDayConvention::Following, calendar);
+        REQUIRE(result == year_month_day{year{2028}, month{2}, day{29}});
+    }
+}
+
+TEST_CASE("advance with ModifiedFollowing convention", "[advance]") {
+    datelib::HolidayCalendar calendar;
+
+    SECTION("Advance to end of month with ModifiedFollowing") {
+        // January 26, 2024 (Friday) + 1W = February 2, 2024 (Friday, business day)
+        auto date = year_month_day{year{2024}, month{1}, day{26}};
+        auto result = datelib::advance(date, "1W",
+                                       datelib::BusinessDayConvention::ModifiedFollowing, calendar);
+        REQUIRE(result == year_month_day{year{2024}, month{2}, day{2}});
+    }
+
+    SECTION("Month end adjustment with ModifiedFollowing") {
+        // May 31, 2024 (Friday) + 1M = June 30, 2024 (Sunday)
+        // Following would give July 1, ModifiedFollowing gives June 28 (Friday)
+        auto date = year_month_day{year{2024}, month{5}, day{31}};
+        auto result = datelib::advance(date, "1M",
+                                       datelib::BusinessDayConvention::ModifiedFollowing, calendar);
+        REQUIRE(result == year_month_day{year{2024}, month{6}, day{28}});
+    }
+}
+
+TEST_CASE("advance with Period object", "[advance]") {
+    datelib::HolidayCalendar calendar;
+
+    SECTION("Using Period object directly") {
+        auto date = year_month_day{year{2024}, month{1}, day{2}};
+        datelib::Period period(2, datelib::Period::Unit::Weeks);
+        auto result =
+            datelib::advance(date, period, datelib::BusinessDayConvention::Following, calendar);
+        REQUIRE(result == year_month_day{year{2024}, month{1}, day{16}});
+    }
+}
+
+TEST_CASE("advance with holidays", "[advance]") {
+    datelib::HolidayCalendar calendar;
+    calendar.addRule(std::make_unique<datelib::FixedDateRule>("New Year's Day", 1, 1));
+    calendar.addRule(std::make_unique<datelib::FixedDateRule>("Independence Day", 7, 4));
+
+    SECTION("Advance landing on holiday with Following") {
+        // December 26, 2023 + 1W = January 1, 2024 (Monday, New Year's Day holiday)
+        // Following adjusts to Tuesday, January 2, 2024
+        auto date = year_month_day{year{2023}, month{12}, day{26}};
+        auto result =
+            datelib::advance(date, "1W", datelib::BusinessDayConvention::Following, calendar);
+        REQUIRE(result == year_month_day{year{2024}, month{1}, day{2}});
+    }
+
+    SECTION("Advance landing on holiday with Preceding") {
+        // July 1, 2024 + 3D = July 4, 2024 (Thursday, Independence Day holiday)
+        // Preceding adjusts to Wednesday, July 3, 2024
+        auto date = year_month_day{year{2024}, month{7}, day{1}};
+        auto result =
+            datelib::advance(date, "3D", datelib::BusinessDayConvention::Preceding, calendar);
+        REQUIRE(result == year_month_day{year{2024}, month{7}, day{3}});
+    }
+}
+
+TEST_CASE("advance with negative periods", "[advance]") {
+    datelib::HolidayCalendar calendar;
+
+    SECTION("Advance by -5 days (go backward)") {
+        // Monday, January 8, 2024 - 5D = Wednesday, January 3, 2024 (business day)
+        auto date = year_month_day{year{2024}, month{1}, day{8}};
+        auto result =
+            datelib::advance(date, "-5D", datelib::BusinessDayConvention::Following, calendar);
+        REQUIRE(result == year_month_day{year{2024}, month{1}, day{3}});
+    }
+
+    SECTION("Advance by -1 month") {
+        // February 15, 2024 - 1M = January 15, 2024 (Monday, business day)
+        auto date = year_month_day{year{2024}, month{2}, day{15}};
+        auto result =
+            datelib::advance(date, "-1M", datelib::BusinessDayConvention::Following, calendar);
+        REQUIRE(result == year_month_day{year{2024}, month{1}, day{15}});
+    }
+
+    SECTION("Advance by -1 year") {
+        // January 15, 2025 - 1Y = January 15, 2024 (Monday, business day)
+        auto date = year_month_day{year{2025}, month{1}, day{15}};
+        auto result =
+            datelib::advance(date, "-1Y", datelib::BusinessDayConvention::Following, calendar);
+        REQUIRE(result == year_month_day{year{2024}, month{1}, day{15}});
+    }
+}
+
+TEST_CASE("advance with invalid input", "[advance][edge_cases]") {
+    datelib::HolidayCalendar calendar;
+
+    SECTION("Invalid date throws") {
+        auto date = year_month_day{year{2024}, month{2}, day{30}}; // Invalid
+        REQUIRE_THROWS_WITH(
+            datelib::advance(date, "1M", datelib::BusinessDayConvention::Following, calendar),
+            "Invalid date provided to advance");
+    }
+
+    SECTION("Invalid period string throws") {
+        auto date = year_month_day{year{2024}, month{1}, day{2}};
+        REQUIRE_THROWS_AS(
+            datelib::advance(date, "invalid", datelib::BusinessDayConvention::Following, calendar),
+            std::invalid_argument);
+    }
+}
+
+TEST_CASE("advance real-world scenarios", "[advance]") {
+    datelib::HolidayCalendar usHolidays;
+    usHolidays.addRule(std::make_unique<datelib::FixedDateRule>("New Year's Day", 1, 1));
+    usHolidays.addRule(std::make_unique<datelib::FixedDateRule>("Independence Day", 7, 4));
+    usHolidays.addRule(std::make_unique<datelib::FixedDateRule>("Christmas", 12, 25));
+
+    SECTION("Calculate settlement date (T+2 business days)") {
+        // Trade on Friday, January 5, 2024
+        // T+2 (2 calendar days) = Sunday, January 7, 2024
+        // Following adjusts to Monday, January 8, 2024
+        auto trade_date = year_month_day{year{2024}, month{1}, day{5}};
+        auto settlement = datelib::advance(trade_date, "2D",
+                                           datelib::BusinessDayConvention::Following, usHolidays);
+        REQUIRE(settlement == year_month_day{year{2024}, month{1}, day{8}});
+    }
+
+    SECTION("Calculate option expiry (3 months from today)") {
+        // Start: January 15, 2024 (Monday)
+        // +3M = April 15, 2024 (Monday, business day)
+        auto start_date = year_month_day{year{2024}, month{1}, day{15}};
+        auto expiry = datelib::advance(
+            start_date, "3M", datelib::BusinessDayConvention::ModifiedFollowing, usHolidays);
+        REQUIRE(expiry == year_month_day{year{2024}, month{4}, day{15}});
+    }
+
+    SECTION("Calculate bond maturity (10 years from issue)") {
+        // Issue: January 2, 2024 (Tuesday)
+        // +10Y = January 2, 2034 (Monday, business day)
+        auto issue_date = year_month_day{year{2024}, month{1}, day{2}};
+        auto maturity = datelib::advance(issue_date, "10Y",
+                                         datelib::BusinessDayConvention::Following, usHolidays);
+        REQUIRE(maturity == year_month_day{year{2034}, month{1}, day{2}});
     }
 }

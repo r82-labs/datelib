@@ -13,7 +13,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 option(ENABLE_COVERAGE "Enable coverage reporting" OFF)
 
 # Library source files
-add_library(datelib SHARED src/date.cpp src/HolidayRule.cpp src/HolidayCalendar.cpp)
+add_library(datelib SHARED src/date.cpp src/period.cpp src/HolidayRule.cpp src/HolidayCalendar.cpp)
 
 # Compiler warnings
 target_compile_options(
@@ -38,7 +38,7 @@ set_target_properties(
     VERSION ${PROJECT_VERSION}
     SOVERSION 1
     PUBLIC_HEADER
-    "include/datelib/date.h;include/datelib/date_util.h;include/datelib/HolidayRule.h;include/datelib/HolidayCalendar.h"
+    "include/datelib/date.h;include/datelib/date_util.h;include/datelib/period.h;include/datelib/HolidayRule.h;include/datelib/HolidayCalendar.h"
 )
 
 # Enable testing

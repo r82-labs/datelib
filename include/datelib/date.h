@@ -2,8 +2,10 @@
 
 #include "datelib/date_util.h"
 #include "datelib/exceptions.h"
+#include "datelib/period.h"
 
 #include <chrono>
+#include <string>
 #include <unordered_set>
 
 namespace datelib {
@@ -80,5 +82,49 @@ adjust(const std::chrono::year_month_day& date, BusinessDayConvention convention
        const HolidayCalendar& calendar,
        const std::unordered_set<std::chrono::weekday, WeekdayHash>& weekend_days = {
            std::chrono::Saturday, std::chrono::Sunday});
+
+/**
+ * @brief Advance a date by a period and adjust according to business day convention
+ * @param date The starting date
+ * @param period The period to advance (e.g., "2W", "6M", "10Y")
+ * @param convention The business day convention to apply after advancing
+ * @param calendar The holiday calendar to use for business day adjustment
+ * @param weekend_days The set of weekdays considered as weekend (defaults to Saturday and Sunday)
+ * @return The advanced and adjusted date
+ * @throws std::invalid_argument if the input date or period string is invalid
+ * @throws BusinessDaySearchException if unable to find a business day within reasonable range
+ *
+ * This is the workhorse function for date calculations. It:
+ * 1. Parses the period string (e.g., "2W" for 2 weeks, "6M" for 6 months, "10Y" for 10 years)
+ * 2. Advances the date by the specified period
+ * 3. Adjusts the resulting date according to the business day convention
+ *
+ * Examples:
+ * - advance(2024-01-15, "2W", Following, calendar) -> advances by 2 weeks then adjusts
+ * - advance(2024-01-31, "1M", ModifiedFollowing, calendar) -> advances by 1 month then adjusts
+ * - advance(2024-12-25, "1Y", Preceding, calendar) -> advances by 1 year then adjusts
+ */
+[[nodiscard]] std::chrono::year_month_day
+advance(const std::chrono::year_month_day& date, const std::string& period,
+        BusinessDayConvention convention, const HolidayCalendar& calendar,
+        const std::unordered_set<std::chrono::weekday, WeekdayHash>& weekend_days = {
+            std::chrono::Saturday, std::chrono::Sunday});
+
+/**
+ * @brief Advance a date by a Period object and adjust according to business day convention
+ * @param date The starting date
+ * @param period The Period object representing the duration to advance
+ * @param convention The business day convention to apply after advancing
+ * @param calendar The holiday calendar to use for business day adjustment
+ * @param weekend_days The set of weekdays considered as weekend (defaults to Saturday and Sunday)
+ * @return The advanced and adjusted date
+ * @throws std::invalid_argument if the input date is invalid
+ * @throws BusinessDaySearchException if unable to find a business day within reasonable range
+ */
+[[nodiscard]] std::chrono::year_month_day
+advance(const std::chrono::year_month_day& date, const Period& period,
+        BusinessDayConvention convention, const HolidayCalendar& calendar,
+        const std::unordered_set<std::chrono::weekday, WeekdayHash>& weekend_days = {
+            std::chrono::Saturday, std::chrono::Sunday});
 
 } // namespace datelib
