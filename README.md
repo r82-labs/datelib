@@ -226,6 +226,8 @@ xdg-open docs/html/index.html  # Linux
 
 **Note:** The `docs/` directory is gitignored. Documentation is automatically generated and published to [GitHub Pages](https://r82-labs.github.io/datelib/) when a new release is published or when the documentation workflow is manually triggered.
 
+> **First-time setup:** If GitHub Pages has not been configured yet, see [`.github/GITHUB_PAGES_SETUP.md`](.github/GITHUB_PAGES_SETUP.md) for instructions on enabling GitHub Pages for this repository.
+
 ## Development with GitHub Copilot
 
 This repository uses GitHub Copilot custom agents to assist with development. See [`.github/CUSTOM_AGENTS.md`](.github/CUSTOM_AGENTS.md) for information about:
