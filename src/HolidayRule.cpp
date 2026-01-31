@@ -4,7 +4,25 @@
 
 namespace datelib {
 
-using namespace std::chrono;
+using std::chrono::day;
+using std::chrono::days;
+using std::chrono::month;
+using std::chrono::month_day_last;
+using std::chrono::sys_days;
+using std::chrono::weekday;
+using std::chrono::year;
+using std::chrono::year_month_day;
+using std::chrono::year_month_day_last;
+
+namespace {
+// Month and day validation constants
+constexpr unsigned MIN_MONTH = 1;
+constexpr unsigned MAX_MONTH = 12;
+constexpr unsigned MIN_DAY = 1;
+constexpr unsigned MAX_DAY = 31;
+constexpr unsigned MAX_WEEKDAY = 6;
+constexpr int DAYS_PER_WEEK = 7;
+} // namespace
 
 // ExplicitDateRule implementation
 ExplicitDateRule::ExplicitDateRule(std::string name, year_month_day date)
@@ -33,10 +51,10 @@ std::unique_ptr<HolidayRule> ExplicitDateRule::clone() const {
 // FixedDateRule implementation
 FixedDateRule::FixedDateRule(std::string name, unsigned month, unsigned day)
     : name_(std::move(name)), month_{month}, day_{day} {
-    if (month < 1 || month > 12) {
+    if (month < MIN_MONTH || month > MAX_MONTH) {
         throw std::invalid_argument("Month must be between 1 and 12");
     }
-    if (day < 1 || day > 31) {
+    if (day < MIN_DAY || day > MAX_DAY) {
         throw std::invalid_argument("Day must be between 1 and 31");
     }
 }
@@ -63,10 +81,10 @@ std::unique_ptr<HolidayRule> FixedDateRule::clone() const {
 NthWeekdayRule::NthWeekdayRule(std::string name, unsigned month, unsigned weekday_val,
                                Occurrence occurrence)
     : name_(std::move(name)), month_{month}, weekday_{weekday_val}, occurrence_(occurrence) {
-    if (month < 1 || month > 12) {
+    if (month < MIN_MONTH || month > MAX_MONTH) {
         throw std::invalid_argument("Month must be between 1 and 12");
     }
-    if (weekday_val > 6) {
+    if (weekday_val > MAX_WEEKDAY) {
         throw std::invalid_argument("Weekday must be between 0 and 6");
     }
     int occ_val = static_cast<int>(occurrence);
@@ -87,8 +105,8 @@ bool NthWeekdayRule::appliesTo(int year) const {
     sys_days first_sd{first_of_month};
     weekday first_weekday{first_sd};
 
-    int days_to_first = (weekday_.c_encoding() - first_weekday.c_encoding() + 7) % 7;
-    sys_days target_sd = first_sd + days{days_to_first + (occ_val - 1) * 7};
+    int days_to_first_weekday = (weekday_.c_encoding() - first_weekday.c_encoding() + DAYS_PER_WEEK) % DAYS_PER_WEEK;
+    sys_days target_sd = first_sd + days{days_to_first_weekday + (occ_val - 1) * DAYS_PER_WEEK};
     year_month_day result{target_sd};
 
     return result.month() == month_;
@@ -106,10 +124,10 @@ year_month_day NthWeekdayRule::calculateDate(int year) const {
     if (occ_val > 0) {
         // Find the Nth occurrence of the target weekday
         // Calculate days to add to get to first occurrence of target weekday
-        int days_to_first = (weekday_.c_encoding() - first_weekday.c_encoding() + 7) % 7;
+        int days_to_first_weekday = (weekday_.c_encoding() - first_weekday.c_encoding() + DAYS_PER_WEEK) % DAYS_PER_WEEK;
 
         // Add weeks to get to the Nth occurrence
-        sys_days target_sd = first_sd + days{days_to_first + (occ_val - 1) * 7};
+        sys_days target_sd = first_sd + days{days_to_first_weekday + (occ_val - 1) * DAYS_PER_WEEK};
         year_month_day result{target_sd};
 
         // Verify we're still in the same month
@@ -128,9 +146,9 @@ year_month_day NthWeekdayRule::calculateDate(int year) const {
         weekday last_weekday{last_sd};
 
         // Calculate days to subtract to get to last occurrence of target weekday
-        int days_to_subtract = (last_weekday.c_encoding() - weekday_.c_encoding() + 7) % 7;
+        int days_back = (last_weekday.c_encoding() - weekday_.c_encoding() + DAYS_PER_WEEK) % DAYS_PER_WEEK;
 
-        sys_days target_sd = last_sd - days{days_to_subtract};
+        sys_days target_sd = last_sd - days{days_back};
         year_month_day result{target_sd};
 
         return result;

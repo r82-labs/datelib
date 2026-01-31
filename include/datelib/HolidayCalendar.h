@@ -57,21 +57,21 @@ class HolidayCalendar {
      * @param date The date to check
      * @return true if the date is a holiday, false otherwise
      */
-    bool isHoliday(const std::chrono::year_month_day& date) const;
+    [[nodiscard]] bool isHoliday(const std::chrono::year_month_day& date) const;
 
     /**
      * @brief Get all holidays for a given year
      * @param year The year to get holidays for
      * @return A sorted vector of all holiday dates in that year
      */
-    std::vector<std::chrono::year_month_day> getHolidays(int year) const;
+    [[nodiscard]] std::vector<std::chrono::year_month_day> getHolidays(int year) const;
 
     /**
      * @brief Get the names of all holidays on a given date
      * @param date The date to check
      * @return A vector of holiday names for that date
      */
-    std::vector<std::string> getHolidayNames(const std::chrono::year_month_day& date) const;
+    [[nodiscard]] std::vector<std::string> getHolidayNames(const std::chrono::year_month_day& date) const;
 
   private:
     std::vector<std::unique_ptr<HolidayRule>> rules_;

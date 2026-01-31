@@ -4,7 +4,7 @@
 
 namespace datelib {
 
-using namespace std::chrono;
+using std::chrono::year_month_day;
 
 HolidayCalendar::HolidayCalendar(const HolidayCalendar& other) {
     // Deep copy the rules
@@ -38,7 +38,16 @@ bool HolidayCalendar::isHoliday(const year_month_day& date) const {
     int year = static_cast<int>(date.year());
 
     return std::any_of(rules_.begin(), rules_.end(), [&](const auto& rule) {
-        return rule->appliesTo(year) && rule->calculateDate(year) == date;
+        if (!rule->appliesTo(year)) {
+            return false;
+        }
+        try {
+            return rule->calculateDate(year) == date;
+        } catch (const std::exception&) {
+            // If calculateDate throws despite appliesTo being true,
+            // treat as not matching this rule
+            return false;
+        }
     });
 }
 
@@ -47,30 +56,30 @@ std::vector<year_month_day> HolidayCalendar::getHolidays(int year) const {
     holidays.reserve(rules_.size());
 
     // Collect all holidays from rules that apply to this year
-    std::for_each(rules_.begin(), rules_.end(), [&](const auto& rule) {
+    for (const auto& rule : rules_) {
         if (rule->appliesTo(year)) {
             holidays.push_back(rule->calculateDate(year));
         }
-    });
+    }
 
     // Sort and remove duplicates
     std::sort(holidays.begin(), holidays.end());
     holidays.erase(std::unique(holidays.begin(), holidays.end()), holidays.end());
 
     return holidays;
-} // LCOV_EXCL_LINE - closing brace coverage unreliable in gcov
+}
 
 std::vector<std::string> HolidayCalendar::getHolidayNames(const year_month_day& date) const {
     std::vector<std::string> names;
     int year = static_cast<int>(date.year());
 
-    std::for_each(rules_.begin(), rules_.end(), [&](const auto& rule) {
+    for (const auto& rule : rules_) {
         if (rule->appliesTo(year) && rule->calculateDate(year) == date) {
             names.push_back(rule->getName());
         }
-    });
+    }
 
     return names;
-} // LCOV_EXCL_LINE - closing brace coverage unreliable in gcov
+}
 
 } // namespace datelib
