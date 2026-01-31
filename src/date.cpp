@@ -112,11 +112,11 @@ adjust(const std::chrono::year_month_day& date, BusinessDayConvention convention
     }
 
     case BusinessDayConvention::Unadjusted:
-        // Already handled above
+        // Already handled at the beginning of the function
         return date;
     }
 
-    // Should never reach here
+    // Should never reach here (all enum values handled above)
     return date;
 }
 
