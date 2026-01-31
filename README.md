@@ -1,6 +1,10 @@
 # datelib
 A C++ library of date utilities
 
+## Documentation
+
+Complete API documentation is available in the [GitHub Wiki](https://github.com/r82-labs/datelib/wiki/API). The documentation is automatically generated from code comments and updated on every merge to the `main` branch.
+
 ## Releases
 
 ### Downloading Releases
@@ -159,6 +163,29 @@ find src include tests -type f \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" 
 ```
 
 The CI pipeline automatically checks code formatting on all pull requests and will fail if code is not properly formatted.
+
+### Generating Documentation Locally
+
+The project uses [Doxygen](https://www.doxygen.nl/) to generate API documentation from code comments.
+
+**Prerequisites:**
+```bash
+# Install Doxygen and Graphviz
+sudo apt-get install -y doxygen graphviz  # Ubuntu/Debian
+brew install doxygen graphviz              # macOS
+```
+
+**Generate documentation:**
+```bash
+# Generate HTML documentation in docs/html/
+doxygen Doxyfile
+
+# View the documentation
+open docs/html/index.html  # macOS
+xdg-open docs/html/index.html  # Linux
+```
+
+**Note:** The `docs/` directory is gitignored. Documentation is automatically generated and published to the [Wiki](https://github.com/r82-labs/datelib/wiki/API) when changes are merged to `main`.
 
 ## Development with GitHub Copilot
 
