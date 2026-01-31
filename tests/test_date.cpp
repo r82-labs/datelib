@@ -161,24 +161,24 @@ TEST_CASE("isBusinessDay with invalid dates", "[isBusinessDay][edge_cases]") {
 
     SECTION("Invalid dates should throw") {
         // February 30th (invalid)
-        REQUIRE_THROWS_AS(
+        REQUIRE_THROWS_WITH(
             datelib::isBusinessDay(year_month_day{year{2024}, month{2}, day{30}}, calendar),
-            std::invalid_argument);
+            "Invalid date provided to isBusinessDay");
 
         // April 31st (invalid)
-        REQUIRE_THROWS_AS(
+        REQUIRE_THROWS_WITH(
             datelib::isBusinessDay(year_month_day{year{2024}, month{4}, day{31}}, calendar),
-            std::invalid_argument);
+            "Invalid date provided to isBusinessDay");
 
         // February 29 on non-leap year
-        REQUIRE_THROWS_AS(
+        REQUIRE_THROWS_WITH(
             datelib::isBusinessDay(year_month_day{year{2023}, month{2}, day{29}}, calendar),
-            std::invalid_argument);
+            "Invalid date provided to isBusinessDay");
 
         // Day 0 (invalid)
-        REQUIRE_THROWS_AS(
+        REQUIRE_THROWS_WITH(
             datelib::isBusinessDay(year_month_day{year{2024}, month{1}, day{0}}, calendar),
-            std::invalid_argument);
+            "Invalid date provided to isBusinessDay");
     }
 }
 
@@ -198,14 +198,14 @@ TEST_CASE("isBusinessDay with leap year dates", "[isBusinessDay][edge_cases]") {
     SECTION("Century years that are NOT leap years") {
         // 1900 was NOT a leap year (divisible by 100 but not 400)
         // February 29, 1900 is INVALID
-        REQUIRE_THROWS_AS(
+        REQUIRE_THROWS_WITH(
             datelib::isBusinessDay(year_month_day{year{1900}, month{2}, day{29}}, calendar),
-            std::invalid_argument);
+            "Invalid date provided to isBusinessDay");
 
         // 2100 will NOT be a leap year
-        REQUIRE_THROWS_AS(
+        REQUIRE_THROWS_WITH(
             datelib::isBusinessDay(year_month_day{year{2100}, month{2}, day{29}}, calendar),
-            std::invalid_argument);
+            "Invalid date provided to isBusinessDay");
     }
 }
 
