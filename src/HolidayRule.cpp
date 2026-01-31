@@ -105,8 +105,8 @@ bool NthWeekdayRule::appliesTo(int year) const {
     sys_days first_sd{first_of_month};
     weekday first_weekday{first_sd};
 
-    int days_to_first_weekday = (weekday_.c_encoding() - first_weekday.c_encoding() + DAYS_PER_WEEK) % DAYS_PER_WEEK;
-    sys_days target_sd = first_sd + days{days_to_first_weekday + (occ_val - 1) * DAYS_PER_WEEK};
+    int days_until_target = (weekday_.c_encoding() - first_weekday.c_encoding() + DAYS_PER_WEEK) % DAYS_PER_WEEK;
+    sys_days target_sd = first_sd + days{days_until_target + (occ_val - 1) * DAYS_PER_WEEK};
     year_month_day result{target_sd};
 
     return result.month() == month_;
@@ -123,11 +123,11 @@ year_month_day NthWeekdayRule::calculateDate(int year) const {
     int occ_val = static_cast<int>(occurrence_);
     if (occ_val > 0) {
         // Find the Nth occurrence of the target weekday
-        // Calculate days to add to get to first occurrence of target weekday
-        int days_to_first_weekday = (weekday_.c_encoding() - first_weekday.c_encoding() + DAYS_PER_WEEK) % DAYS_PER_WEEK;
+        // Calculate days to add to reach first occurrence of target weekday
+        int days_until_target = (weekday_.c_encoding() - first_weekday.c_encoding() + DAYS_PER_WEEK) % DAYS_PER_WEEK;
 
         // Add weeks to get to the Nth occurrence
-        sys_days target_sd = first_sd + days{days_to_first_weekday + (occ_val - 1) * DAYS_PER_WEEK};
+        sys_days target_sd = first_sd + days{days_until_target + (occ_val - 1) * DAYS_PER_WEEK};
         year_month_day result{target_sd};
 
         // Verify we're still in the same month
@@ -146,9 +146,9 @@ year_month_day NthWeekdayRule::calculateDate(int year) const {
         weekday last_weekday{last_sd};
 
         // Calculate days to subtract to get to last occurrence of target weekday
-        int days_back = (last_weekday.c_encoding() - weekday_.c_encoding() + DAYS_PER_WEEK) % DAYS_PER_WEEK;
+        int days_to_subtract = (last_weekday.c_encoding() - weekday_.c_encoding() + DAYS_PER_WEEK) % DAYS_PER_WEEK;
 
-        sys_days target_sd = last_sd - days{days_back};
+        sys_days target_sd = last_sd - days{days_to_subtract};
         year_month_day result{target_sd};
 
         return result;
