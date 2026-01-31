@@ -40,6 +40,11 @@ class HolidayCalendar {
     HolidayCalendar& operator=(HolidayCalendar&& other) noexcept = default;
 
     /**
+     * @brief Destructor
+     */
+    ~HolidayCalendar() = default;
+
+    /**
      * @brief Add an explicit holiday date
      * @param name The name of the holiday
      * @param date The date to mark as a holiday
