@@ -58,3 +58,6 @@ CTestTestfile.cmake
 
 # CodeQL files
 _codeql_detected_source_root
+
+# Generated documentation
+docs/
