@@ -12,12 +12,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Coverage option (enabled via -DENABLE_COVERAGE=ON)
 option(ENABLE_COVERAGE "Enable coverage reporting" OFF)
 
-# Library source files (using explicit file list for better dependency tracking)
-add_library(datelib SHARED 
-  src/date.cpp 
-  src/HolidayRule.cpp
-  src/HolidayCalendar.cpp
-)
+# Library source files
+add_library(datelib SHARED src/date.cpp src/period.cpp src/HolidayRule.cpp src/HolidayCalendar.cpp)
 
 # Compiler warnings using modern generator expressions
 target_compile_options(datelib PRIVATE
@@ -37,11 +33,14 @@ target_include_directories(datelib PUBLIC
   $<INSTALL_INTERFACE:include>
 )
 
-# Set library properties with improved formatting
-set_target_properties(datelib PROPERTIES
-  VERSION ${PROJECT_VERSION}
-  SOVERSION 1
-  PUBLIC_HEADER "include/datelib/date.h;include/datelib/date_util.h;include/datelib/HolidayRule.h;include/datelib/HolidayCalendar.h"
+# Set library properties
+set_target_properties(
+  datelib
+  PROPERTIES
+    VERSION ${PROJECT_VERSION}
+    SOVERSION 1
+    PUBLIC_HEADER
+    "include/datelib/date.h;include/datelib/date_util.h;include/datelib/period.h;include/datelib/HolidayRule.h;include/datelib/HolidayCalendar.h"
 )
 
 # Enable testing
