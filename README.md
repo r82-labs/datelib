@@ -90,7 +90,7 @@ The version is defined in `CMakeLists.txt` and serves as the single source of tr
 ## Development Setup
 
 ### Prerequisites
-- CMake 3.14 or later
+- CMake 3.31 or later
 - C++23 compatible compiler (GCC 11+, Clang 15+, or MSVC 2022+)
 - Python 3.7+ (for pre-commit hooks)
 
