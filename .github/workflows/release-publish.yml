@@ -195,7 +195,7 @@ jobs:
     - name: Trigger documentation generation on default branch
       run: |
         # Get the PR base branch
-        # Note: This workflow only triggers on pull_request events (see 'on:' at line 5)
+        # Note: This workflow only triggers on pull_request events (see 'on:' trigger at top of file)
         # so github.event.pull_request.base.ref is always available.
         # Fallback to 'main' is a defensive safety measure.
         BRANCH="${{ github.event.pull_request.base.ref }}"
