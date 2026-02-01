@@ -76,7 +76,8 @@ class HolidayCalendar {
      * @param date The date to check
      * @return A vector of holiday names for that date
      */
-    std::vector<std::string> getHolidayNames(const std::chrono::year_month_day& date) const;
+    [[nodiscard]] std::vector<std::string>
+    getHolidayNames(const std::chrono::year_month_day& date) const;
 
   private:
     std::vector<std::unique_ptr<HolidayRule>> rules_;

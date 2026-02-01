@@ -19,7 +19,7 @@ The repository must already have the documentation generation workflow configure
 Under **Build and deployment**:
 
 1. **Source**: Select **Deploy from a branch**
-2. **Branch**: 
+2. **Branch**:
    - Select **gh-pages** from the dropdown
    - Select **/ (root)** as the folder
    - Click **Save**

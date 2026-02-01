@@ -43,7 +43,7 @@ bool HolidayCalendar::isHoliday(const year_month_day& date) const {
     });
 }
 
-std::vector<year_month_day> HolidayCalendar::getHolidays(int year) const {
+std::vector<year_month_day> HolidayCalendar::getHolidays(const int year) const {
     std::vector<year_month_day> holidays;
     holidays.reserve(rules_.size());
 
@@ -64,7 +64,7 @@ std::vector<year_month_day> HolidayCalendar::getHolidays(int year) const {
 
 std::vector<std::string> HolidayCalendar::getHolidayNames(const year_month_day& date) const {
     std::vector<std::string> names;
-    auto year = static_cast<int>(date.year());
+    const auto year = static_cast<int>(date.year());
 
     for (const auto& rule : rules_) {
         if (rule->appliesTo(year) && rule->calculateDate(year) == date) {

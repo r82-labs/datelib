@@ -37,7 +37,7 @@ Pre-built releases are available on the [GitHub Releases page](https://github.co
    # If installed system-wide
    find_library(DATELIB_LIBRARY datelib)
    target_link_libraries(your_target PRIVATE ${DATELIB_LIBRARY})
-   
+
    # Or specify the path directly
    target_include_directories(your_target PRIVATE /path/to/datelib/include)
    target_link_libraries(your_target PRIVATE /path/to/datelib/lib/libdatelib.so)
