@@ -244,8 +244,5 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed for PR decoration
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      with:
-        args: >
-          -Dsonar.host.url=https://sonarcloud.io
       # Continue on error to allow PRs from forks without SONAR_TOKEN
       continue-on-error: true
