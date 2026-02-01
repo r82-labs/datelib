@@ -106,7 +106,7 @@ If you prefer using a fine-grained PAT:
 
 **Cause**: The PAT token doesn't have the required scopes.
 
-**Solution**: 
+**Solution**:
 1. Verify the token has both `repo` and `workflow` scopes (classic PAT)
 2. Or verify it has Contents, Pull requests, and Workflows permissions (fine-grained PAT)
 

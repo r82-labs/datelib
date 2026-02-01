@@ -40,6 +40,11 @@ class HolidayCalendar {
     HolidayCalendar& operator=(HolidayCalendar&& other) noexcept = default;
 
     /**
+     * @brief Destructor
+     */
+    ~HolidayCalendar() = default;
+
+    /**
      * @brief Add an explicit holiday date
      * @param name The name of the holiday
      * @param date The date to mark as a holiday
@@ -71,7 +76,8 @@ class HolidayCalendar {
      * @param date The date to check
      * @return A vector of holiday names for that date
      */
-    std::vector<std::string> getHolidayNames(const std::chrono::year_month_day& date) const;
+    [[nodiscard]] std::vector<std::string>
+    getHolidayNames(const std::chrono::year_month_day& date) const;
 
   private:
     std::vector<std::unique_ptr<HolidayRule>> rules_;

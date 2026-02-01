@@ -1,6 +1,7 @@
 #include "datelib/HolidayCalendar.h"
 
 #include <algorithm>
+#include <ranges>
 
 namespace datelib {
 
@@ -35,14 +36,14 @@ void HolidayCalendar::addRule(std::unique_ptr<HolidayRule> rule) {
 }
 
 bool HolidayCalendar::isHoliday(const year_month_day& date) const {
-    int year = static_cast<int>(date.year());
+    auto year = static_cast<int>(date.year());
 
-    return std::any_of(rules_.begin(), rules_.end(), [&](const auto& rule) {
+    return std::ranges::any_of(rules_, [&](const auto& rule) {
         return rule->appliesTo(year) && rule->calculateDate(year) == date;
     });
 }
 
-std::vector<year_month_day> HolidayCalendar::getHolidays(int year) const {
+std::vector<year_month_day> HolidayCalendar::getHolidays(const int year) const {
     std::vector<year_month_day> holidays;
     holidays.reserve(rules_.size());
 
@@ -54,15 +55,16 @@ std::vector<year_month_day> HolidayCalendar::getHolidays(int year) const {
     }
 
     // Sort and remove duplicates
-    std::sort(holidays.begin(), holidays.end());
-    holidays.erase(std::unique(holidays.begin(), holidays.end()), holidays.end());
+    std::ranges::sort(holidays);
+    auto [new_end, end] = std::ranges::unique(holidays);
+    holidays.erase(new_end, end);
 
     return holidays;
 } // LCOV_EXCL_LINE
 
 std::vector<std::string> HolidayCalendar::getHolidayNames(const year_month_day& date) const {
     std::vector<std::string> names;
-    int year = static_cast<int>(date.year());
+    const auto year = static_cast<int>(date.year());
 
     for (const auto& rule : rules_) {
         if (rule->appliesTo(year) && rule->calculateDate(year) == date) {

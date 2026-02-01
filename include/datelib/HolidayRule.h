@@ -3,12 +3,11 @@
 #include <chrono>
 #include <memory>
 #include <string>
-#include <vector>
 
 namespace datelib {
 
 /**
- * @brief Enum for specifying occurrence of a weekday in a month
+ * @brief Enum for specifying the occurrence of a weekday in a month
  */
 enum class Occurrence { First = 1, Second = 2, Third = 3, Fourth = 4, Fifth = 5, Last = -1 };
 
@@ -24,7 +23,7 @@ class HolidayRule {
      * @param year The year to check
      * @return True if the rule can generate a holiday for this year
      */
-    virtual bool appliesTo(int year) const = 0;
+    [[nodiscard]] virtual bool appliesTo(int year) const = 0;
 
     /**
      * @brief Calculate the holiday date for a given year
@@ -33,26 +32,26 @@ class HolidayRule {
      * @throws std::exception if the rule cannot be applied to this year (caller should check
      * appliesTo() first)
      */
-    virtual std::chrono::year_month_day calculateDate(int year) const = 0;
+    [[nodiscard]] virtual std::chrono::year_month_day calculateDate(int year) const = 0;
 
     /**
      * @brief Get the name of this holiday
      * @return The holiday name
      */
-    virtual std::string getName() const = 0;
+    [[nodiscard]] virtual std::string getName() const = 0;
 
     /**
      * @brief Clone this rule
      * @return A unique pointer to a copy of this rule
      */
-    virtual std::unique_ptr<HolidayRule> clone() const = 0;
+    [[nodiscard]] virtual std::unique_ptr<HolidayRule> clone() const = 0;
 };
 
 /**
  * @brief Rule for an explicit date that is always a holiday
  *
  * ExplicitDateRule represents a one-time or non-recurring holiday on a specific date.
- * Unlike FixedDateRule which recurs annually, ExplicitDateRule only applies to the
+ * Unlike FixedDateRule, which recurs annually, ExplicitDateRule only applies to the
  * exact year specified in the date.
  *
  * Example usage:
@@ -88,10 +87,10 @@ class ExplicitDateRule : public HolidayRule {
      * @return The stored date if the year matches
      * @throws std::runtime_error if the year doesn't match the stored date's year
      */
-    bool appliesTo(int year) const override;
-    std::chrono::year_month_day calculateDate(int year) const override;
-    std::string getName() const override { return name_; }
-    std::unique_ptr<HolidayRule> clone() const override;
+    [[nodiscard]] bool appliesTo(int year) const override;
+    [[nodiscard]] std::chrono::year_month_day calculateDate(int year) const override;
+    [[nodiscard]] std::string getName() const override { return name_; }
+    [[nodiscard]] std::unique_ptr<HolidayRule> clone() const override;
 
   private:
     std::string name_;
@@ -108,14 +107,14 @@ class FixedDateRule : public HolidayRule {
      * @brief Construct a fixed date holiday rule
      * @param name The name of the holiday
      * @param month The month (1-12)
-     * @param day The day of month (1-31)
+     * @param day The day of the month (1-31)
      */
     FixedDateRule(std::string name, unsigned month, unsigned day);
 
-    bool appliesTo(int year) const override;
-    std::chrono::year_month_day calculateDate(int year) const override;
-    std::string getName() const override { return name_; }
-    std::unique_ptr<HolidayRule> clone() const override;
+    [[nodiscard]] bool appliesTo(int year) const override;
+    [[nodiscard]] std::chrono::year_month_day calculateDate(int year) const override;
+    [[nodiscard]] std::string getName() const override { return name_; }
+    [[nodiscard]] std::unique_ptr<HolidayRule> clone() const override;
 
   private:
     std::string name_;
@@ -131,18 +130,18 @@ class FixedDateRule : public HolidayRule {
 class NthWeekdayRule : public HolidayRule {
   public:
     /**
-     * @brief Construct an Nth weekday holiday rule
+     * @brief Construct a Nth weekday holiday rule
      * @param name The name of the holiday
      * @param month The month (1-12)
-     * @param weekday The day of week (0=Sunday, 6=Saturday)
+     * @param weekday The day of the week (0=Sunday, 6=Saturday)
      * @param occurrence Which occurrence (First, Second, Third, Fourth, Fifth, or Last)
      */
     NthWeekdayRule(std::string name, unsigned month, unsigned weekday, Occurrence occurrence);
 
-    bool appliesTo(int year) const override;
-    std::chrono::year_month_day calculateDate(int year) const override;
-    std::string getName() const override { return name_; }
-    std::unique_ptr<HolidayRule> clone() const override;
+    [[nodiscard]] bool appliesTo(int year) const override;
+    [[nodiscard]] std::chrono::year_month_day calculateDate(int year) const override;
+    [[nodiscard]] std::string getName() const override { return name_; }
+    [[nodiscard]] std::unique_ptr<HolidayRule> clone() const override;
 
   private:
     std::string name_;

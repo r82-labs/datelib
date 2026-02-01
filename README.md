@@ -37,7 +37,7 @@ Pre-built releases are available on the [GitHub Releases page](https://github.co
    # If installed system-wide
    find_library(DATELIB_LIBRARY datelib)
    target_link_libraries(your_target PRIVATE ${DATELIB_LIBRARY})
-   
+
    # Or specify the path directly
    target_include_directories(your_target PRIVATE /path/to/datelib/include)
    target_link_libraries(your_target PRIVATE /path/to/datelib/lib/libdatelib.so)
@@ -90,8 +90,8 @@ The version is defined in `CMakeLists.txt` and serves as the single source of tr
 ## Development Setup
 
 ### Prerequisites
-- CMake 3.14 or later
-- C++20 compatible compiler (GCC, Clang, or MSVC)
+- CMake 3.31 or later
+- C++23 compatible compiler (GCC 11+, Clang 15+, or MSVC 2022+)
 - Python 3.7+ (for pre-commit hooks)
 
 ### SonarQube Code Analysis

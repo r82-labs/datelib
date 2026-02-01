@@ -2,6 +2,7 @@
 
 #include "datelib/HolidayCalendar.h"
 #include "datelib/period.h"
+#include "datelib/exceptions.h"
 
 namespace datelib {
 
@@ -62,18 +63,18 @@ bool isBusinessDay(const std::chrono::year_month_day& date, const HolidayCalenda
     }
 
     // Convert to sys_days to get the weekday
-    auto sys_days_date = std::chrono::sys_days{date};
+    const auto sys_days_date = std::chrono::sys_days{date};
     std::chrono::weekday wd{sys_days_date};
 
     // Check if the day is not a weekend day
-    bool is_not_weekend = (weekend_days.find(wd) == weekend_days.end());
+    const bool is_not_weekend = !weekend_days.contains(wd);
 
     // A business day is not a weekend day and not a holiday
     return is_not_weekend && !calendar.isHoliday(date);
 }
 
 std::chrono::year_month_day
-adjust(const std::chrono::year_month_day& date, BusinessDayConvention convention,
+adjust(const std::chrono::year_month_day& date, const BusinessDayConvention convention,
        const HolidayCalendar& calendar,
        const std::unordered_set<std::chrono::weekday, WeekdayHash>& weekend_days) {
     // Validate the input date
@@ -120,7 +121,7 @@ adjust(const std::chrono::year_month_day& date, BusinessDayConvention convention
 
     // This should never be reached as all enum values are handled above
     // If we reach here, it's a logic error (e.g., uninitialized enum)
-    throw std::logic_error("Unhandled BusinessDayConvention in adjust()");
+    throw UnhandledEnumException("Unhandled BusinessDayConvention in adjust()");
 }
 
 std::chrono::year_month_day

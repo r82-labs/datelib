@@ -1,51 +1,68 @@
 name: Generate Documentation
+# Workflow to generate and publish API documentation
 
 on:
   workflow_call:
+    secrets:
+      GITHUB_TOKEN:
+        required: true
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   generate-docs:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Install Doxygen and Graphviz
       run: |
         sudo apt-get update
         sudo apt-get install -y doxygen graphviz
-    
+
     - name: Generate documentation
       run: |
         # Extract version from CMakeLists.txt using Perl regex (available in Ubuntu)
         VERSION=$(grep -oP '(?<=VERSION )\d+\.\d+\.\d+' CMakeLists.txt | head -1)
-        
+
         # Validate version extraction
         if [ -z "$VERSION" ]; then
           echo "ERROR: Failed to extract version from CMakeLists.txt"
           exit 1
         fi
-        
+
         echo "Extracted version: $VERSION"
-        
+
         # Update Doxyfile with the current version
         sed -i "s/PROJECT_NUMBER.*/PROJECT_NUMBER         = $VERSION/" Doxyfile
-        
+
         doxygen Doxyfile
-        
+
         # Add .nojekyll file to prevent GitHub Pages from processing with Jekyll
         touch docs/html/.nojekyll
-        
-    - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v4
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./docs/html
-        publish_branch: gh-pages
-        commit_message: 'Update API documentation - ${{ github.sha }}'
 
+    - name: Setup Pages
+      uses: actions/configure-pages@v5
+
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: ./docs/html
+
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
