@@ -156,7 +156,7 @@ advance(const std::chrono::year_month_day& date, const Period& period,
         auto d = date.day();
 
         // Calculate new month/year
-        int total_months = static_cast<int>(static_cast<unsigned>(m)) + period.value();
+        int total_months = static_cast<int>(unsigned{m}) + period.value();
 
         // Handle month overflow/underflow
         int year_offset = 0;
