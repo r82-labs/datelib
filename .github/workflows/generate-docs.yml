@@ -3,9 +3,6 @@ name: Generate Documentation
 
 on:
   workflow_call:
-    secrets:
-      GITHUB_TOKEN:
-        required: true
   workflow_dispatch:
 
 permissions:
@@ -36,8 +33,8 @@ jobs:
 
     - name: Generate documentation
       run: |
-        # Extract version from CMakeLists.txt using Perl regex (available in Ubuntu)
-        VERSION=$(grep -oP '(?<=VERSION )\d+\.\d+\.\d+' CMakeLists.txt | head -1)
+        # Extract version from CMakeLists.txt (consistent with release workflows)
+        VERSION=$(grep -E '^\s*VERSION\s+[0-9]+\.[0-9]+\.[0-9]+' CMakeLists.txt | awk '{print $2}')
 
         # Validate version extraction
         if [ -z "$VERSION" ]; then
