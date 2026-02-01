@@ -11,19 +11,19 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y cmake clang-format
-    
+
     - name: Configure CMake
       run: cmake -B build -S .
-    
+
     - name: Check code formatting
       run: cmake --build build --target format-check
 
@@ -32,7 +32,7 @@ jobs:
     needs: format-check
     permissions:
       contents: read
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4

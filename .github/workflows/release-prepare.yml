@@ -110,11 +110,11 @@ jobs:
           title: "Release v${{ steps.version.outputs.new_version }}"
           body: |
             Automated version bump to ${{ steps.version.outputs.new_version }} (${{ inputs.bump_type }} release)
-            
+
             This PR bumps the version from ${{ steps.version.outputs.current_version }} to ${{ steps.version.outputs.new_version }} in:
             - CMakeLists.txt
             - sonar-project.properties (if present)
-            
+
             After merging, the release will be automatically published by the release-publish workflow.
           labels: release
           assignees: ${{ github.actor }}

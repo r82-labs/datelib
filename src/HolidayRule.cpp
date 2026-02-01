@@ -90,7 +90,8 @@ NthWeekdayRule::NthWeekdayRule(std::string name, const unsigned month, const uns
     if (weekday > MAX_WEEKDAY) {
         throw std::invalid_argument("Weekday must be between 0 and 6");
     }
-    if (const int occ_val = std::to_underlying(occurrence); occ_val == 0 || occ_val < -1 || occ_val > 5) {
+    if (const int occ_val = std::to_underlying(occurrence);
+        occ_val == 0 || occ_val < -1 || occ_val > 5) {
         throw std::invalid_argument("Occurrence must be First through Fifth or Last");
     }
 }

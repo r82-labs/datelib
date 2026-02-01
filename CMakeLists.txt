@@ -13,7 +13,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 option(ENABLE_COVERAGE "Enable coverage reporting" OFF)
 
 # Library source files
-add_library(datelib SHARED src/date.cpp src/HolidayRule.cpp src/HolidayCalendar.cpp)
+add_library(datelib SHARED src/date.cpp src/HolidayRule.cpp
+                           src/HolidayCalendar.cpp)
 
 # Compiler warnings
 target_compile_options(
