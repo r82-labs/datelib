@@ -11,6 +11,8 @@ jobs:
   check:
     # This job always runs to prevent the workflow from showing as "failed" when skipped
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
     outputs:
       should_release: ${{ steps.check.outputs.should_release }}
     steps:
