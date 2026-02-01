@@ -285,15 +285,17 @@ int dayCount(const std::chrono::year_month_day& start, const std::chrono::year_m
         int m2 = static_cast<unsigned>(end.month());
         int d2 = static_cast<unsigned>(end.day());
 
+        // Save original d1 for the rule that depends on it
+        int original_d1 = d1;
+
         // Apply 30/360 US rules:
         // If d1 is 31, change it to 30
         if (d1 == 31) {
             d1 = 30;
         }
 
-        // If d2 is 31 and d1 is 30 or 31, change d2 to 30
-        if (d2 == 31 && (static_cast<unsigned>(start.day()) == 30 ||
-                         static_cast<unsigned>(start.day()) == 31)) {
+        // If d2 is 31 and original d1 was 30 or 31, change d2 to 30
+        if (d2 == 31 && (original_d1 == 30 || original_d1 == 31)) {
             d2 = 30;
         }
 
