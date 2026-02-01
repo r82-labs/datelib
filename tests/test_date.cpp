@@ -903,6 +903,40 @@ TEST_CASE("advance with invalid input", "[advance][edge_cases]") {
             datelib::advance(date, "invalid", datelib::BusinessDayConvention::Following, calendar),
             std::invalid_argument);
     }
+
+    SECTION("Too many business days throws") {
+        // Create a calendar where every single day is a holiday
+        // and all days of the week are weekends
+        datelib::HolidayCalendar all_holidays;
+        for (int month = 1; month <= 12; ++month) {
+            for (int day = 1; day <= 31; ++day) {
+                try {
+                    auto holiday_date =
+                        year_month_day{year{2024}, std::chrono::month{static_cast<unsigned>(month)},
+                                       std::chrono::day{static_cast<unsigned>(day)}};
+                    if (holiday_date.ok()) {
+                        all_holidays.addHoliday("Holiday", holiday_date);
+                    }
+                } catch (...) {
+                    // Ignore any errors
+                }
+            }
+        }
+
+        // Make all days of the week weekends
+        std::unordered_set<std::chrono::weekday, datelib::WeekdayHash> all_weekends = {
+            std::chrono::Sunday,    std::chrono::Monday,   std::chrono::Tuesday,
+            std::chrono::Wednesday, std::chrono::Thursday, std::chrono::Friday,
+            std::chrono::Saturday};
+
+        auto date = year_month_day{year{2024}, month{1}, day{1}};
+        REQUIRE_THROWS_AS(datelib::advance(date, "1D", datelib::BusinessDayConvention::Following,
+                                           all_holidays, all_weekends),
+                          datelib::BusinessDaySearchException);
+        REQUIRE_THROWS_WITH(datelib::advance(date, "1D", datelib::BusinessDayConvention::Following,
+                                             all_holidays, all_weekends),
+                            "Unable to add business days within reasonable range");
+    }
 }
 
 TEST_CASE("advance real-world scenarios", "[advance]") {
