@@ -52,6 +52,47 @@ std::chrono::year_month_day moveToPreviousBusinessDay(
 
     return adjusted_ymd;
 }
+
+/**
+ * @brief Add a number of business days to a date
+ * @param start The starting date
+ * @param num_business_days Number of business days to add (can be negative)
+ * @param calendar The holiday calendar
+ * @param weekend_days The set of weekdays considered as weekend
+ * @return The date after adding the specified number of business days
+ */
+std::chrono::year_month_day
+addBusinessDays(const std::chrono::year_month_day& start, int num_business_days,
+                const HolidayCalendar& calendar,
+                const std::unordered_set<std::chrono::weekday, WeekdayHash>& weekend_days) {
+    if (num_business_days == 0) {
+        return start;
+    }
+
+    auto current = std::chrono::sys_days{start};
+    std::chrono::year_month_day current_ymd{current};
+    int days_added = 0;
+    int direction = (num_business_days > 0) ? 1 : -1;
+    int target = std::abs(num_business_days);
+    int iterations = 0;
+
+    while (days_added < target) {
+        if (++iterations > MAX_DAYS_TO_SEARCH) {
+            throw BusinessDaySearchException("Unable to add business days within reasonable range");
+        }
+
+        // Move one calendar day in the appropriate direction
+        current += std::chrono::days{direction};
+        current_ymd = std::chrono::year_month_day{current};
+
+        // Check if this is a business day
+        if (isBusinessDay(current_ymd, calendar, weekend_days)) {
+            days_added++;
+        }
+    }
+
+    return current_ymd;
+}
 } // namespace
 
 bool isBusinessDay(const std::chrono::year_month_day& date, const HolidayCalendar& calendar,
@@ -138,10 +179,10 @@ advance(const std::chrono::year_month_day& date, const Period& period,
     using enum Period::Unit;
     switch (period.unit()) {
     case Days:
-        // Add days directly
-        result_date = std::chrono::year_month_day{std::chrono::sys_days{date} +
-                                                  std::chrono::days{period.value()}};
-        break;
+        // For days, add business days (skipping weekends and holidays)
+        result_date = addBusinessDays(date, period.value(), calendar, weekend_days);
+        // Business days already account for holidays, so return directly without further adjustment
+        return result_date;
 
     case Weeks:
         // Add weeks (7 days per week)
@@ -204,11 +245,11 @@ advance(const std::chrono::year_month_day& date, const Period& period,
 }
 
 std::chrono::year_month_day
-advance(const std::chrono::year_month_day& date, const std::string& period,
+advance(const std::chrono::year_month_day& date, std::string_view period,
         BusinessDayConvention convention, const HolidayCalendar& calendar,
         const std::unordered_set<std::chrono::weekday, WeekdayHash>& weekend_days) {
-    // Parse the period string
-    Period parsed_period = Period::parse(period);
+    // Parse the period string (converts string_view to string for Period::parse)
+    Period parsed_period = Period::parse(std::string(period));
 
     // Call the Period-based overload
     return advance(date, parsed_period, convention, calendar, weekend_days);

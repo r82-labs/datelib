@@ -686,25 +686,25 @@ TEST_CASE("Period::parse with invalid strings", "[period][edge_cases]") {
 TEST_CASE("advance with days period", "[advance]") {
     datelib::HolidayCalendar calendar;
 
-    SECTION("Advance by 5 days with Following convention") {
-        // Tuesday, January 2, 2024 + 5D = Sunday, January 7, 2024
-        // Following adjusts to Monday, January 8, 2024
+    SECTION("Advance by 5 business days") {
+        // Tuesday, January 2, 2024 + 5 business days
+        // Wed 3, Thu 4, Fri 5, Mon 8, Tue 9 = January 9, 2024
         auto date = year_month_day{year{2024}, month{1}, day{2}};
         auto result =
             datelib::advance(date, "5D", datelib::BusinessDayConvention::Following, calendar);
-        REQUIRE(result == year_month_day{year{2024}, month{1}, day{8}});
+        REQUIRE(result == year_month_day{year{2024}, month{1}, day{9}});
     }
 
-    SECTION("Advance by 1 day, landing on business day") {
-        // Tuesday, January 2, 2024 + 1D = Wednesday, January 3, 2024 (business day)
+    SECTION("Advance by 1 business day") {
+        // Tuesday, January 2, 2024 + 1 business day = Wednesday, January 3, 2024
         auto date = year_month_day{year{2024}, month{1}, day{2}};
         auto result =
             datelib::advance(date, "1D", datelib::BusinessDayConvention::Following, calendar);
         REQUIRE(result == year_month_day{year{2024}, month{1}, day{3}});
     }
 
-    SECTION("Advance by 0 days with Unadjusted") {
-        // Tuesday, January 2, 2024 + 0D = Tuesday, January 2, 2024
+    SECTION("Advance by 0 business days") {
+        // Tuesday, January 2, 2024 + 0 business days = Tuesday, January 2, 2024
         auto date = year_month_day{year{2024}, month{1}, day{2}};
         auto result =
             datelib::advance(date, "0D", datelib::BusinessDayConvention::Unadjusted, calendar);
@@ -844,24 +844,25 @@ TEST_CASE("advance with holidays", "[advance]") {
     }
 
     SECTION("Advance landing on holiday with Preceding") {
-        // July 1, 2024 + 3D = July 4, 2024 (Thursday, Independence Day holiday)
-        // Preceding adjusts to Wednesday, July 3, 2024
+        // July 1, 2024 (Mon) + 3 business days = July 2 (Tue), July 3 (Wed), July 5 (Fri)
+        // (skipping July 4 holiday) = July 5, 2024
         auto date = year_month_day{year{2024}, month{7}, day{1}};
         auto result =
             datelib::advance(date, "3D", datelib::BusinessDayConvention::Preceding, calendar);
-        REQUIRE(result == year_month_day{year{2024}, month{7}, day{3}});
+        REQUIRE(result == year_month_day{year{2024}, month{7}, day{5}});
     }
 }
 
 TEST_CASE("advance with negative periods", "[advance]") {
     datelib::HolidayCalendar calendar;
 
-    SECTION("Advance by -5 days (go backward)") {
-        // Monday, January 8, 2024 - 5D = Wednesday, January 3, 2024 (business day)
+    SECTION("Advance by -5 business days (go backward)") {
+        // Monday, January 8, 2024 - 5 business days
+        // Fri 5, Thu 4, Wed 3, Tue 2, Mon 1 = January 1, 2024
         auto date = year_month_day{year{2024}, month{1}, day{8}};
         auto result =
             datelib::advance(date, "-5D", datelib::BusinessDayConvention::Following, calendar);
-        REQUIRE(result == year_month_day{year{2024}, month{1}, day{3}});
+        REQUIRE(result == year_month_day{year{2024}, month{1}, day{1}});
     }
 
     SECTION("Advance by -1 month") {
@@ -910,12 +911,11 @@ TEST_CASE("advance real-world scenarios", "[advance]") {
 
     SECTION("Calculate settlement date (T+2 business days)") {
         // Trade on Friday, January 5, 2024
-        // T+2 (2 calendar days) = Sunday, January 7, 2024
-        // Following adjusts to Monday, January 8, 2024
+        // T+2 business days = Monday, January 8 and Tuesday, January 9, 2024
         auto trade_date = year_month_day{year{2024}, month{1}, day{5}};
         auto settlement = datelib::advance(trade_date, "2D",
                                            datelib::BusinessDayConvention::Following, usHolidays);
-        REQUIRE(settlement == year_month_day{year{2024}, month{1}, day{8}});
+        REQUIRE(settlement == year_month_day{year{2024}, month{1}, day{9}});
     }
 
     SECTION("Calculate option expiry (3 months from today)") {

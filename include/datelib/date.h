@@ -91,7 +91,8 @@ adjust(const std::chrono::year_month_day& date, BusinessDayConvention convention
  * @param calendar The holiday calendar to use for business day adjustment
  * @param weekend_days The set of weekdays considered as weekend (defaults to Saturday and Sunday)
  * @return The advanced and adjusted date
- * @throws std::invalid_argument if the input date or period string is invalid
+ * @throws std::invalid_argument if the period string is invalid
+ * @throws InvalidDateException if the input date is invalid
  * @throws BusinessDaySearchException if unable to find a business day within reasonable range
  *
  * This is the workhorse function for date calculations. It:
@@ -105,7 +106,7 @@ adjust(const std::chrono::year_month_day& date, BusinessDayConvention convention
  * - advance(2024-12-25, "1Y", Preceding, calendar) -> advances by 1 year then adjusts
  */
 [[nodiscard]] std::chrono::year_month_day
-advance(const std::chrono::year_month_day& date, const std::string& period,
+advance(const std::chrono::year_month_day& date, std::string_view period,
         BusinessDayConvention convention, const HolidayCalendar& calendar,
         const std::unordered_set<std::chrono::weekday, WeekdayHash>& weekend_days = {
             std::chrono::Saturday, std::chrono::Sunday});
