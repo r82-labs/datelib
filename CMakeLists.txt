@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.31)
 project(
   datelib
-  VERSION 1.0.3
+  VERSION 1.0.4
   LANGUAGES CXX)
 
 # Set C++ standard using target properties (applied to all targets via CMAKE_CXX_*)
