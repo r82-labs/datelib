@@ -919,12 +919,9 @@ TEST_CASE("advance with invalid input", "[advance][edge_cases]") {
             datelib::InvalidDateException);
 
         // Verify the exception message
-        try {
-            datelib::advance(date, "1M", datelib::BusinessDayConvention::Following, calendar);
-            FAIL("Expected InvalidDateException to be thrown");
-        } catch (const datelib::InvalidDateException& e) {
-            REQUIRE(std::string(e.what()) == "Invalid date provided to advance");
-        }
+        REQUIRE_THROWS_WITH(
+            datelib::advance(date, "1M", datelib::BusinessDayConvention::Following, calendar),
+            "Invalid date provided to advance");
     }
 
     SECTION("Invalid period string throws") {
