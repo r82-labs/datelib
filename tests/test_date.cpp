@@ -1078,6 +1078,60 @@ TEST_CASE("dayCount with ActualActual convention", "[dayCount]") {
     }
 }
 
+TEST_CASE("dayCount with ActualActualISDA convention", "[dayCount]") {
+    using namespace datelib;
+
+    SECTION("Same date returns zero") {
+        auto date = year_month_day{year{2024}, month{1}, day{15}};
+        REQUIRE(dayCount(date, date, DayCountConvention::ActualActualISDA) == 0);
+    }
+
+    SECTION("One day difference") {
+        auto start = year_month_day{year{2024}, month{1}, day{15}};
+        auto end = year_month_day{year{2024}, month{1}, day{16}};
+        REQUIRE(dayCount(start, end, DayCountConvention::ActualActualISDA) == 1);
+    }
+
+    SECTION("Leap year February (29 days)") {
+        auto start = year_month_day{year{2024}, month{2}, day{1}};
+        auto end = year_month_day{year{2024}, month{3}, day{1}};
+        REQUIRE(dayCount(start, end, DayCountConvention::ActualActualISDA) == 29);
+    }
+
+    SECTION("Non-leap year February (28 days)") {
+        auto start = year_month_day{year{2023}, month{2}, day{1}};
+        auto end = year_month_day{year{2023}, month{3}, day{1}};
+        REQUIRE(dayCount(start, end, DayCountConvention::ActualActualISDA) == 28);
+    }
+
+    SECTION("Full leap year (366 days)") {
+        auto start = year_month_day{year{2024}, month{1}, day{1}};
+        auto end = year_month_day{year{2025}, month{1}, day{1}};
+        REQUIRE(dayCount(start, end, DayCountConvention::ActualActualISDA) == 366);
+    }
+
+    SECTION("Full non-leap year (365 days)") {
+        auto start = year_month_day{year{2023}, month{1}, day{1}};
+        auto end = year_month_day{year{2024}, month{1}, day{1}};
+        REQUIRE(dayCount(start, end, DayCountConvention::ActualActualISDA) == 365);
+    }
+
+    SECTION("Negative difference when end < start") {
+        auto start = year_month_day{year{2024}, month{1}, day{22}};
+        auto end = year_month_day{year{2024}, month{1}, day{15}};
+        REQUIRE(dayCount(start, end, DayCountConvention::ActualActualISDA) == -7);
+    }
+
+    SECTION("Same as ActualActual for day counting") {
+        auto start = year_month_day{year{2020}, month{1}, day{1}};
+        auto end = year_month_day{year{2025}, month{1}, day{1}};
+        int actual = dayCount(start, end, DayCountConvention::ActualActual);
+        int isda = dayCount(start, end, DayCountConvention::ActualActualISDA);
+        REQUIRE(actual == isda);
+        REQUIRE(isda == 1827);
+    }
+}
+
 TEST_CASE("dayCount with Thirty360 convention", "[dayCount]") {
     using namespace datelib;
 

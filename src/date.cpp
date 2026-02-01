@@ -275,6 +275,16 @@ int dayCount(const std::chrono::year_month_day& start, const std::chrono::year_m
         return diff.count();
     }
 
+    case ActualActualISDA: {
+        // Actual/Actual ISDA: exact difference in calendar days
+        // For raw day count, same as ActualActual
+        // The ISDA variant differs in year fraction calculations (uses 366 for leap years, 365 otherwise)
+        auto start_days = std::chrono::sys_days{start};
+        auto end_days = std::chrono::sys_days{end};
+        auto diff = end_days - start_days;
+        return diff.count();
+    }
+
     case Thirty360: {
         // 30/360 US (NASD) convention
         int y1 = static_cast<int>(start.year());
