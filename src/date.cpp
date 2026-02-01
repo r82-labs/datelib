@@ -136,20 +136,21 @@ advance(const std::chrono::year_month_day& date, const Period& period,
     std::chrono::year_month_day result_date = date;
 
     // Advance the date based on the period unit
+    using enum Period::Unit;
     switch (period.unit()) {
-    case Period::Unit::Days:
+    case Days:
         // Add days directly
         result_date = std::chrono::year_month_day{std::chrono::sys_days{date} +
                                                   std::chrono::days{period.value()}};
         break;
 
-    case Period::Unit::Weeks:
+    case Weeks:
         // Add weeks (7 days per week)
         result_date = std::chrono::year_month_day{std::chrono::sys_days{date} +
                                                   std::chrono::days{period.value() * 7}};
         break;
 
-    case Period::Unit::Months: {
+    case Months: {
         // Add months (calendar-aware)
         auto y = date.year();
         auto m = date.month();
@@ -181,7 +182,7 @@ advance(const std::chrono::year_month_day& date, const Period& period,
         break;
     }
 
-    case Period::Unit::Years: {
+    case Years: {
         // Add years (calendar-aware)
         auto y = date.year();
         auto m = date.month();
