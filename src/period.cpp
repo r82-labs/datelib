@@ -4,6 +4,7 @@
 #include <format>
 #include <stdexcept>
 #include <string_view>
+#include <unordered_map>
 
 namespace datelib {
 
@@ -56,25 +57,27 @@ int parseNumericValue(std::string_view period_str, size_t numeric_end) {
     }
 }
 
-// Helper function to parse the unit character
+// Helper function to parse the unit character using a map-based lookup
 Period::Unit parseUnit(std::string_view period_str, size_t unit_index) {
-    char unit_char = std::toupper(period_str[unit_index]);
-
     using enum Period::Unit;
-    switch (unit_char) {
-    case 'D':
-        return Days;
-    case 'W':
-        return Weeks;
-    case 'M':
-        return Months;
-    case 'Y':
-        return Years;
-    default:
-        throw std::invalid_argument(
-            std::format("Invalid period unit '{}'. Must be D, W, M, or Y: {}",
-                        period_str[unit_index], period_str));
+    
+    static const std::unordered_map<char, Period::Unit> unit_map = {
+        {'D', Days},
+        {'W', Weeks},
+        {'M', Months},
+        {'Y', Years}
+    };
+
+    char unit_char = std::toupper(period_str[unit_index]);
+    
+    auto it = unit_map.find(unit_char);
+    if (it != unit_map.end()) {
+        return it->second;
     }
+    
+    throw std::invalid_argument(
+        std::format("Invalid period unit '{}'. Must be D, W, M, or Y: {}",
+                    period_str[unit_index], period_str));
 }
 } // namespace
 
