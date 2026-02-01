@@ -917,9 +917,14 @@ TEST_CASE("advance with invalid input", "[advance][edge_cases]") {
         REQUIRE_THROWS_AS(
             datelib::advance(date, "1M", datelib::BusinessDayConvention::Following, calendar),
             datelib::InvalidDateException);
-        REQUIRE_THROWS_WITH(
-            datelib::advance(date, "1M", datelib::BusinessDayConvention::Following, calendar),
-            "Invalid date provided to advance");
+
+        // Verify the exception message
+        try {
+            datelib::advance(date, "1M", datelib::BusinessDayConvention::Following, calendar);
+            FAIL("Expected InvalidDateException to be thrown");
+        } catch (const datelib::InvalidDateException& e) {
+            REQUIRE(std::string(e.what()) == "Invalid date provided to advance");
+        }
     }
 
     SECTION("Invalid period string throws") {
@@ -933,18 +938,22 @@ TEST_CASE("advance with invalid input", "[advance][edge_cases]") {
         // Create a calendar where every single day is a holiday
         // and all days of the week are weekends
         datelib::HolidayCalendar all_holidays;
+
+        // Add all valid dates in 2024 as holidays
         for (int month = 1; month <= 12; ++month) {
-            for (int day = 1; day <= 31; ++day) {
-                try {
-                    auto holiday_date =
-                        year_month_day{year{2024}, std::chrono::month{static_cast<unsigned>(month)},
-                                       std::chrono::day{static_cast<unsigned>(day)}};
-                    if (holiday_date.ok()) {
-                        all_holidays.addHoliday("Holiday", holiday_date);
-                    }
-                } catch (...) {
-                    // Ignore any errors
-                }
+            // Determine days in month (simplified approach)
+            int days_in_month = 31;
+            if (month == 2) {
+                days_in_month = 29; // 2024 is a leap year
+            } else if (month == 4 || month == 6 || month == 9 || month == 11) {
+                days_in_month = 30;
+            }
+
+            for (int day = 1; day <= days_in_month; ++day) {
+                auto holiday_date =
+                    year_month_day{year{2024}, std::chrono::month{static_cast<unsigned>(month)},
+                                   std::chrono::day{static_cast<unsigned>(day)}};
+                all_holidays.addHoliday("Holiday", holiday_date);
             }
         }
 
