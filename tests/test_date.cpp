@@ -1009,3 +1009,258 @@ TEST_CASE("advance real-world scenarios", "[advance]") {
         REQUIRE(maturity == year_month_day{year{2034}, month{1}, day{2}});
     }
 }
+
+// =========================
+// dayCount function tests
+// =========================
+
+TEST_CASE("dayCount with ActualActual convention", "[dayCount]") {
+    using namespace datelib;
+
+    SECTION("Same date returns zero") {
+        auto date = year_month_day{year{2024}, month{1}, day{15}};
+        REQUIRE(dayCount(date, date, DayCountConvention::ActualActual) == 0);
+    }
+
+    SECTION("One day difference") {
+        auto start = year_month_day{year{2024}, month{1}, day{15}};
+        auto end = year_month_day{year{2024}, month{1}, day{16}};
+        REQUIRE(dayCount(start, end, DayCountConvention::ActualActual) == 1);
+    }
+
+    SECTION("One week difference") {
+        auto start = year_month_day{year{2024}, month{1}, day{15}};
+        auto end = year_month_day{year{2024}, month{1}, day{22}};
+        REQUIRE(dayCount(start, end, DayCountConvention::ActualActual) == 7);
+    }
+
+    SECTION("One month difference (31 days)") {
+        auto start = year_month_day{year{2024}, month{1}, day{1}};
+        auto end = year_month_day{year{2024}, month{2}, day{1}};
+        REQUIRE(dayCount(start, end, DayCountConvention::ActualActual) == 31);
+    }
+
+    SECTION("Leap year February (29 days)") {
+        auto start = year_month_day{year{2024}, month{2}, day{1}};
+        auto end = year_month_day{year{2024}, month{3}, day{1}};
+        REQUIRE(dayCount(start, end, DayCountConvention::ActualActual) == 29);
+    }
+
+    SECTION("Non-leap year February (28 days)") {
+        auto start = year_month_day{year{2023}, month{2}, day{1}};
+        auto end = year_month_day{year{2023}, month{3}, day{1}};
+        REQUIRE(dayCount(start, end, DayCountConvention::ActualActual) == 28);
+    }
+
+    SECTION("One year difference (365 days)") {
+        auto start = year_month_day{year{2023}, month{1}, day{1}};
+        auto end = year_month_day{year{2024}, month{1}, day{1}};
+        REQUIRE(dayCount(start, end, DayCountConvention::ActualActual) == 365);
+    }
+
+    SECTION("Leap year (366 days)") {
+        auto start = year_month_day{year{2024}, month{1}, day{1}};
+        auto end = year_month_day{year{2025}, month{1}, day{1}};
+        REQUIRE(dayCount(start, end, DayCountConvention::ActualActual) == 366);
+    }
+
+    SECTION("Negative difference when end < start") {
+        auto start = year_month_day{year{2024}, month{1}, day{22}};
+        auto end = year_month_day{year{2024}, month{1}, day{15}};
+        REQUIRE(dayCount(start, end, DayCountConvention::ActualActual) == -7);
+    }
+
+    SECTION("Large date range") {
+        auto start = year_month_day{year{2020}, month{1}, day{1}};
+        auto end = year_month_day{year{2025}, month{1}, day{1}};
+        // 2020 (366) + 2021 (365) + 2022 (365) + 2023 (365) + 2024 (366) = 1827
+        REQUIRE(dayCount(start, end, DayCountConvention::ActualActual) == 1827);
+    }
+}
+
+TEST_CASE("dayCount with ActualActualISDA convention", "[dayCount]") {
+    using namespace datelib;
+
+    SECTION("Same date returns zero") {
+        auto date = year_month_day{year{2024}, month{1}, day{15}};
+        REQUIRE(dayCount(date, date, DayCountConvention::ActualActualISDA) == 0);
+    }
+
+    SECTION("One day difference") {
+        auto start = year_month_day{year{2024}, month{1}, day{15}};
+        auto end = year_month_day{year{2024}, month{1}, day{16}};
+        REQUIRE(dayCount(start, end, DayCountConvention::ActualActualISDA) == 1);
+    }
+
+    SECTION("Leap year February (29 days)") {
+        auto start = year_month_day{year{2024}, month{2}, day{1}};
+        auto end = year_month_day{year{2024}, month{3}, day{1}};
+        REQUIRE(dayCount(start, end, DayCountConvention::ActualActualISDA) == 29);
+    }
+
+    SECTION("Non-leap year February (28 days)") {
+        auto start = year_month_day{year{2023}, month{2}, day{1}};
+        auto end = year_month_day{year{2023}, month{3}, day{1}};
+        REQUIRE(dayCount(start, end, DayCountConvention::ActualActualISDA) == 28);
+    }
+
+    SECTION("Full leap year (366 days)") {
+        auto start = year_month_day{year{2024}, month{1}, day{1}};
+        auto end = year_month_day{year{2025}, month{1}, day{1}};
+        REQUIRE(dayCount(start, end, DayCountConvention::ActualActualISDA) == 366);
+    }
+
+    SECTION("Full non-leap year (365 days)") {
+        auto start = year_month_day{year{2023}, month{1}, day{1}};
+        auto end = year_month_day{year{2024}, month{1}, day{1}};
+        REQUIRE(dayCount(start, end, DayCountConvention::ActualActualISDA) == 365);
+    }
+
+    SECTION("Negative difference when end < start") {
+        auto start = year_month_day{year{2024}, month{1}, day{22}};
+        auto end = year_month_day{year{2024}, month{1}, day{15}};
+        REQUIRE(dayCount(start, end, DayCountConvention::ActualActualISDA) == -7);
+    }
+
+    SECTION("Same as ActualActual for day counting") {
+        auto start = year_month_day{year{2020}, month{1}, day{1}};
+        auto end = year_month_day{year{2025}, month{1}, day{1}};
+        int actual = dayCount(start, end, DayCountConvention::ActualActual);
+        int isda = dayCount(start, end, DayCountConvention::ActualActualISDA);
+        REQUIRE(actual == isda);
+        REQUIRE(isda == 1827);
+    }
+}
+
+TEST_CASE("dayCount with Thirty360 convention", "[dayCount]") {
+    using namespace datelib;
+
+    SECTION("Same date returns zero") {
+        auto date = year_month_day{year{2024}, month{1}, day{15}};
+        REQUIRE(dayCount(date, date, DayCountConvention::Thirty360) == 0);
+    }
+
+    SECTION("One day difference") {
+        auto start = year_month_day{year{2024}, month{1}, day{15}};
+        auto end = year_month_day{year{2024}, month{1}, day{16}};
+        REQUIRE(dayCount(start, end, DayCountConvention::Thirty360) == 1);
+    }
+
+    SECTION("One month exactly (30 days)") {
+        auto start = year_month_day{year{2024}, month{1}, day{15}};
+        auto end = year_month_day{year{2024}, month{2}, day{15}};
+        REQUIRE(dayCount(start, end, DayCountConvention::Thirty360) == 30);
+    }
+
+    SECTION("One year exactly (360 days)") {
+        auto start = year_month_day{year{2024}, month{1}, day{15}};
+        auto end = year_month_day{year{2025}, month{1}, day{15}};
+        REQUIRE(dayCount(start, end, DayCountConvention::Thirty360) == 360);
+    }
+
+    SECTION("Start day 31 is adjusted to 30") {
+        auto start = year_month_day{year{2024}, month{1}, day{31}};
+        auto end = year_month_day{year{2024}, month{3}, day{15}};
+        // 30 days to Feb + 15 days in March = 45 days
+        REQUIRE(dayCount(start, end, DayCountConvention::Thirty360) == 45);
+    }
+
+    SECTION("End day 31 is adjusted when start is 30 or 31") {
+        auto start = year_month_day{year{2024}, month{1}, day{31}};
+        auto end = year_month_day{year{2024}, month{3}, day{31}};
+        // Start: Jan 31 -> 30, End: Mar 31 -> 30, diff: 2*30 = 60
+        REQUIRE(dayCount(start, end, DayCountConvention::Thirty360) == 60);
+    }
+
+    SECTION("End day 31 is NOT adjusted when start is < 30") {
+        auto start = year_month_day{year{2024}, month{1}, day{29}};
+        auto end = year_month_day{year{2024}, month{3}, day{31}};
+        // Start: Jan 29, End: Mar 31, diff: (2 * 30) + 2 = 62
+        REQUIRE(dayCount(start, end, DayCountConvention::Thirty360) == 62);
+    }
+
+    SECTION("February month transitions") {
+        auto start = year_month_day{year{2024}, month{1}, day{31}};
+        auto end = year_month_day{year{2024}, month{2}, day{29}};
+        // Start: Jan 31 -> 30, End: Feb 29, diff: 29 days (30 - 30 + 29 = 29)
+        REQUIRE(dayCount(start, end, DayCountConvention::Thirty360) == 29);
+    }
+
+    SECTION("Negative difference when end < start") {
+        auto start = year_month_day{year{2024}, month{2}, day{15}};
+        auto end = year_month_day{year{2024}, month{1}, day{15}};
+        REQUIRE(dayCount(start, end, DayCountConvention::Thirty360) == -30);
+    }
+
+    SECTION("Multiple years") {
+        auto start = year_month_day{year{2020}, month{6}, day{15}};
+        auto end = year_month_day{year{2024}, month{6}, day{15}};
+        // 4 years * 360 = 1440
+        REQUIRE(dayCount(start, end, DayCountConvention::Thirty360) == 1440);
+    }
+
+    SECTION("Complex date with all adjustments") {
+        auto start = year_month_day{year{2023}, month{5}, day{31}};
+        auto end = year_month_day{year{2024}, month{8}, day{31}};
+        // Start: May 31 -> 30, End: Aug 31 -> 30
+        // Years: 1*360 = 360, Months: 3*30 = 90, Days: 0
+        // Total: 360 + 90 = 450
+        REQUIRE(dayCount(start, end, DayCountConvention::Thirty360) == 450);
+    }
+}
+
+TEST_CASE("dayCount with invalid dates", "[dayCount][edge_cases]") {
+    using namespace datelib;
+
+    SECTION("Invalid start date throws") {
+        auto invalid_start = year_month_day{year{2024}, month{2}, day{30}};
+        auto valid_end = year_month_day{year{2024}, month{3}, day{15}};
+        REQUIRE_THROWS_AS(dayCount(invalid_start, valid_end, DayCountConvention::ActualActual),
+                          std::invalid_argument);
+    }
+
+    SECTION("Invalid end date throws") {
+        auto valid_start = year_month_day{year{2024}, month{1}, day{15}};
+        auto invalid_end = year_month_day{year{2024}, month{2}, day{30}};
+        REQUIRE_THROWS_AS(dayCount(valid_start, invalid_end, DayCountConvention::ActualActual),
+                          std::invalid_argument);
+    }
+
+    SECTION("Both invalid dates throws") {
+        auto invalid_start = year_month_day{year{2024}, month{2}, day{30}};
+        auto invalid_end = year_month_day{year{2024}, month{13}, day{1}};
+        REQUIRE_THROWS_AS(dayCount(invalid_start, invalid_end, DayCountConvention::ActualActual),
+                          std::invalid_argument);
+    }
+}
+
+TEST_CASE("dayCount comparison between conventions", "[dayCount][comparison]") {
+    using namespace datelib;
+
+    SECTION("Same month, same day count") {
+        auto start = year_month_day{year{2024}, month{1}, day{15}};
+        auto end = year_month_day{year{2024}, month{1}, day{25}};
+        auto actual = dayCount(start, end, DayCountConvention::ActualActual);
+        auto thirty360 = dayCount(start, end, DayCountConvention::Thirty360);
+        REQUIRE(actual == 10);
+        REQUIRE(thirty360 == 10);
+    }
+
+    SECTION("Full month shows difference (31 days vs 30 days)") {
+        auto start = year_month_day{year{2024}, month{1}, day{1}};
+        auto end = year_month_day{year{2024}, month{2}, day{1}};
+        auto actual = dayCount(start, end, DayCountConvention::ActualActual);
+        auto thirty360 = dayCount(start, end, DayCountConvention::Thirty360);
+        REQUIRE(actual == 31); // January has 31 days
+        REQUIRE(thirty360 == 30); // 30/360 assumes 30 days per month
+    }
+
+    SECTION("Full year shows difference (365/366 vs 360)") {
+        auto start = year_month_day{year{2023}, month{1}, day{1}};
+        auto end = year_month_day{year{2024}, month{1}, day{1}};
+        auto actual = dayCount(start, end, DayCountConvention::ActualActual);
+        auto thirty360 = dayCount(start, end, DayCountConvention::Thirty360);
+        REQUIRE(actual == 365); // 2023 is not a leap year
+        REQUIRE(thirty360 == 360); // 30/360 assumes 360 days per year
+    }
+}

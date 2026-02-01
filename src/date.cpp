@@ -255,4 +255,59 @@ advance(const std::chrono::year_month_day& date, std::string_view period,
     return advance(date, parsed_period, convention, calendar, weekend_days);
 }
 
+int dayCount(const std::chrono::year_month_day& start, const std::chrono::year_month_day& end,
+             DayCountConvention convention) {
+    // Validate both dates
+    if (!start.ok()) {
+        throw std::invalid_argument("Invalid start date provided to dayCount");
+    }
+    if (!end.ok()) {
+        throw std::invalid_argument("Invalid end date provided to dayCount");
+    }
+
+    using enum DayCountConvention;
+    switch (convention) {
+    case ActualActual:
+    case ActualActualISDA: {
+        // Actual/Actual and Actual/Actual ISDA: exact difference in calendar days
+        // Both return the same raw day count; ISDA differs in year fraction calculations
+        auto start_days = std::chrono::sys_days{start};
+        auto end_days = std::chrono::sys_days{end};
+        auto diff = end_days - start_days;
+        return diff.count();
+    }
+
+    case Thirty360: {
+        // 30/360 US (NASD) convention
+        int y1 = static_cast<int>(start.year());
+        int m1 = static_cast<unsigned>(start.month());
+        int d1 = static_cast<unsigned>(start.day());
+
+        int y2 = static_cast<int>(end.year());
+        int m2 = static_cast<unsigned>(end.month());
+        int d2 = static_cast<unsigned>(end.day());
+
+        // Save original d1 for the rule that depends on it
+        int original_d1 = d1;
+
+        // Apply 30/360 US rules:
+        // If d1 is 31, change it to 30
+        if (d1 == 31) {
+            d1 = 30;
+        }
+
+        // If d2 is 31 and original d1 was 30 or 31, change d2 to 30
+        if (d2 == 31 && (original_d1 == 30 || original_d1 == 31)) {
+            d2 = 30;
+        }
+
+        // Calculate day count: 360*(Y2-Y1) + 30*(M2-M1) + (D2-D1)
+        return 360 * (y2 - y1) + 30 * (m2 - m1) + (d2 - d1);
+    }
+    }
+
+    // This should never be reached as all enum values are handled above
+    throw UnhandledEnumException("Unhandled DayCountConvention in dayCount()");
+}
+
 } // namespace datelib

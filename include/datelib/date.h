@@ -46,6 +46,29 @@ enum class BusinessDayConvention {
 };
 
 /**
+ * @brief Day count conventions for calculating the number of days between two dates
+ */
+enum class DayCountConvention {
+    /**
+     * @brief Actual/Actual: Exact difference in calendar days
+     */
+    ActualActual,
+
+    /**
+     * @brief Actual/Actual ISDA: Exact difference in calendar days
+     * For raw day count, returns the same value as ActualActual.
+     * The ISDA distinction (366-day denominator in leap years, 365-day otherwise)
+     * will be used in future year fraction calculations to prevent "interest distortion".
+     */
+    ActualActualISDA,
+
+    /**
+     * @brief 30/360 (US/NASD): Assumes 30 days per month and 360 days per year
+     */
+    Thirty360
+};
+
+/**
  * @brief Check if a given date is a business day
  * @param date The date to check
  * @param calendar The holiday calendar to use for checking holidays
@@ -127,5 +150,23 @@ advance(const std::chrono::year_month_day& date, const Period& period,
         BusinessDayConvention convention, const HolidayCalendar& calendar,
         const std::unordered_set<std::chrono::weekday, WeekdayHash>& weekend_days = {
             std::chrono::Saturday, std::chrono::Sunday});
+
+/**
+ * @brief Calculate the number of days between two dates using a day count convention
+ * @param start The start date
+ * @param end The end date
+ * @param convention The day count convention to use
+ * @return The number of days between start and end according to the convention
+ *         (negative if end < start)
+ * @throws std::invalid_argument if either date is invalid
+ *
+ * Supported conventions:
+ * - ActualActual: Returns the exact difference in calendar days (end - start)
+ * - Thirty360: Applies the 30/360 US (NASD) day count convention which assumes
+ *   30 days per month and 360 days per year
+ */
+[[nodiscard]] int dayCount(const std::chrono::year_month_day& start,
+                           const std::chrono::year_month_day& end,
+                           DayCountConvention convention);
 
 } // namespace datelib
