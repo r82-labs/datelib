@@ -3,18 +3,19 @@
 #include <cctype>
 #include <format>
 #include <stdexcept>
+#include <string_view>
 
 namespace datelib {
 
 namespace {
 // Helper function to validate period string format and find numeric portion
-size_t validateAndFindNumericEnd(const std::string& period_str, bool& has_sign) {
+std::pair<size_t, bool> validateAndFindNumericEnd(std::string_view period_str) {
     if (period_str.empty()) {
         throw std::invalid_argument("Period string cannot be empty");
     }
 
     size_t numeric_end = 0;
-    has_sign = false;
+    bool has_sign = false;
 
     // Check for optional sign at the beginning
     if (period_str[0] == '+' || period_str[0] == '-') {
@@ -39,13 +40,14 @@ size_t validateAndFindNumericEnd(const std::string& period_str, bool& has_sign) 
             "Period string must end with a single unit character (D/W/M/Y): {}", period_str));
     }
 
-    return numeric_end;
+    return {numeric_end, has_sign};
 }
 
 // Helper function to parse the numeric value from period string
-int parseNumericValue(const std::string& period_str, size_t numeric_end) {
+int parseNumericValue(std::string_view period_str, size_t numeric_end) {
     try {
-        return std::stoi(period_str.substr(0, numeric_end));
+        // string_view doesn't have stoi, need to convert to string
+        return std::stoi(std::string(period_str.substr(0, numeric_end)));
     } catch (const std::exception&) {
         throw std::invalid_argument(
             std::format("Invalid numeric value in period string: {}", period_str));
@@ -53,7 +55,7 @@ int parseNumericValue(const std::string& period_str, size_t numeric_end) {
 }
 
 // Helper function to parse the unit character
-Period::Unit parseUnit(const std::string& period_str, size_t unit_index) {
+Period::Unit parseUnit(std::string_view period_str, size_t unit_index) {
     char unit_char = std::toupper(period_str[unit_index]);
 
     using enum Period::Unit;
@@ -75,8 +77,7 @@ Period::Unit parseUnit(const std::string& period_str, size_t unit_index) {
 } // namespace
 
 Period Period::parse(const std::string& period_str) {
-    bool has_sign = false;
-    size_t numeric_end = validateAndFindNumericEnd(period_str, has_sign);
+    auto [numeric_end, has_sign] = validateAndFindNumericEnd(period_str);
     int value = parseNumericValue(period_str, numeric_end);
     Unit unit = parseUnit(period_str, numeric_end);
 

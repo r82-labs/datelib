@@ -886,6 +886,9 @@ TEST_CASE("advance with invalid input", "[advance][edge_cases]") {
 
     SECTION("Invalid date throws") {
         auto date = year_month_day{year{2024}, month{2}, day{30}}; // Invalid
+        REQUIRE_THROWS_AS(
+            datelib::advance(date, "1M", datelib::BusinessDayConvention::Following, calendar),
+            datelib::InvalidDateException);
         REQUIRE_THROWS_WITH(
             datelib::advance(date, "1M", datelib::BusinessDayConvention::Following, calendar),
             "Invalid date provided to advance");

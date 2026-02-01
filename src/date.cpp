@@ -129,7 +129,7 @@ advance(const std::chrono::year_month_day& date, const Period& period,
         const std::unordered_set<std::chrono::weekday, WeekdayHash>& weekend_days) {
     // Validate the input date
     if (!date.ok()) {
-        throw std::invalid_argument("Invalid date provided to advance");
+        throw InvalidDateException("Invalid date provided to advance");
     }
 
     std::chrono::year_month_day result_date = date;
