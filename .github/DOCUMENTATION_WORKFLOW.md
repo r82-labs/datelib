@@ -4,7 +4,7 @@ This document explains how the documentation generation workflow works and how t
 
 ## Overview
 
-The `generate-docs.yml` workflow automatically generates API documentation using Doxygen and optionally publishes it to the GitHub Wiki.
+The `generate-docs.yml` workflow automatically generates API documentation using Doxygen and publishes it to GitHub Pages using the official GitHub Pages deployment action.
 
 ## Triggers
 
@@ -28,30 +28,30 @@ To manually generate and publish documentation:
 1. **Checkout code**: Checks out the repository
 2. **Install Doxygen and Graphviz**: Installs required documentation tools
 3. **Generate documentation**: Runs Doxygen to create HTML documentation in `docs/html/`
-4. **Checkout Wiki** (optional): Attempts to checkout the GitHub Wiki repository
-5. **Copy documentation to Wiki** (conditional): Copies generated docs to Wiki if it's available
-6. **Commit and push to Wiki** (conditional): Publishes updated documentation to Wiki
-7. **Wiki not available** (conditional): Shows helpful message if Wiki is not enabled
+4. **Setup Pages**: Configures GitHub Pages settings (automatic)
+5. **Upload artifact**: Uploads the generated documentation as a deployment artifact
+6. **Deploy to GitHub Pages**: Publishes the documentation to GitHub Pages
 
-## Wiki Setup
+## GitHub Pages Configuration
 
-The workflow will gracefully handle the case where the Wiki is not yet enabled. If you want to enable Wiki publishing:
+The workflow uses the official `actions/deploy-pages` action, which **automatically configures GitHub Pages** when run for the first time. No manual configuration in repository settings is required.
 
-1. Go to repository **Settings**
-2. Scroll down to the **Features** section
-3. Enable **Wikis**
-4. Create at least one page in the Wiki (this initializes the Wiki repository)
+The documentation will be available at: `https://r82-labs.github.io/datelib/`
 
-Once the Wiki is enabled and initialized, the workflow will automatically publish documentation to it.
+## Deployment Method
 
-## Without Wiki
+This workflow uses the modern GitHub Pages deployment approach:
+- **Deployment source**: GitHub Actions (configured automatically)
+- **Artifact-based deployment**: The documentation is uploaded as a build artifact and then deployed
+- **No branch required**: Unlike older methods, this doesn't require a `gh-pages` branch
 
-Even if the Wiki is not available, the workflow will still:
-- Successfully generate the documentation
-- Complete without errors
-- Store the generated HTML in the `docs/html/` directory (gitignored)
+## Benefits of the Current Setup
 
-The documentation can be viewed locally by opening `docs/html/index.html` in a web browser after running the workflow or generating docs locally.
+1. **Automatic configuration**: GitHub Pages is configured automatically on first run
+2. **Improved security**: Uses built-in `GITHUB_TOKEN` with proper permission scoping
+3. **Better visibility**: Deployment status is visible in the Actions tab and Settings → Pages
+4. **Official support**: Uses GitHub's official deployment action
+5. **Environment protection**: Can optionally configure deployment environments and protection rules
 
 ## Local Documentation Generation
 
@@ -72,23 +72,40 @@ xdg-open docs/html/index.html  # Linux
 
 ## Troubleshooting
 
-### Workflow fails with "repository not found"
+### Workflow fails with permission errors
 
-This error occurs when the Wiki is not enabled. The workflow has been updated to handle this gracefully:
-- The error is now caught with `continue-on-error: true`
-- Documentation is still generated successfully
-- A helpful notice is displayed with instructions to enable the Wiki
+If the workflow fails with permission errors:
+1. Go to **Settings** → **Actions** → **General**
+2. Under "Workflow permissions", ensure proper permissions are set
+3. Verify the workflow has `pages: write` and `id-token: write` permissions
+4. Re-run the workflow
 
-### Documentation not updating in Wiki
+### Documentation not updating
 
-If documentation generation succeeds but Wiki doesn't update:
-1. Check that the Wiki is enabled in repository settings
-2. Verify that at least one Wiki page exists (to initialize the repository)
-3. Check workflow logs for any permission errors
-4. Ensure the `GITHUB_TOKEN` has `contents: write` permission (already configured)
+If documentation generation succeeds but the site doesn't update:
+1. Check the workflow logs for any errors in the deployment step
+2. Go to **Settings** → **Pages** to verify the deployment status
+3. Wait a few minutes as deployment can take time
+4. Clear your browser cache and try again
+
+### First-time deployment issues
+
+If this is the first time running the workflow:
+1. The workflow will automatically configure GitHub Pages on first run
+2. The initial deployment may take a few extra minutes
+3. Check **Settings** → **Pages** to confirm "GitHub Actions" is set as the source
+4. If the source is not set, try running the workflow again
+
+## Migration from Old Setup
+
+If you previously used the `gh-pages` branch for deployment:
+- The new workflow uses the official GitHub Actions deployment method
+- The `gh-pages` branch is no longer needed and can be deleted
+- The workflow will automatically migrate to the new deployment method
 
 ## Related Documentation
 
+- [GitHub Pages Setup](.github/GITHUB_PAGES_SETUP.md)
 - [Release Workflow Setup](.github/RELEASE_WORKFLOW_SETUP.md)
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
 - [Doxygen Manual](https://www.doxygen.nl/manual/)
