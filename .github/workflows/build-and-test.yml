@@ -100,10 +100,11 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Install lcov
+    - name: Install lcov and gcovr
       run: |
         sudo apt-get update
         sudo apt-get install -y lcov
+        pip install gcovr
 
     - name: Download test artifacts
       uses: actions/download-artifact@v4
@@ -134,21 +135,19 @@ jobs:
         # Generate HTML report
         genhtml coverage_filtered.info --output-directory coverage_html --title "datelib Coverage Report" --legend
 
-        # Generate .gcov files for SonarQube
-        # SonarQube C/C++ analyzer requires .gcov files, not LCOV format
-        mkdir -p coverage-reports
-        cd coverage-reports
-        # Run gcov for each object file with --preserve-paths to avoid name clashes
-        # This generates .gcov files that SonarQube can read
-        # We search the parent directory (build/) for all .o files
-        find .. -name '*.o' -exec gcov --preserve-paths {} \; 2>&1 | grep -E "^(File|Creating|Lines)" || true
-        # Verify .gcov files were created
-        GCOV_COUNT=$(find . -name "*.gcov" | wc -l)
-        echo "Generated $GCOV_COUNT .gcov files for SonarQube"
-        if [ "$GCOV_COUNT" -eq 0 ]; then
-          echo "WARNING: No .gcov files were generated. SonarQube may not show coverage."
-        fi
+        # Go back to project root to generate SonarQube coverage report
         cd ..
+
+        # Generate SonarQube-compatible XML coverage report using gcovr
+        # This generates relative paths that match sonar.sources configuration
+        gcovr --sonarqube -o build/coverage-sonarqube.xml --root . build/
+        
+        # Verify SonarQube coverage file was created
+        if [ ! -s build/coverage-sonarqube.xml ]; then
+          echo "ERROR: SonarQube coverage XML was not generated"
+          exit 1
+        fi
+        echo "Generated SonarQube coverage report at build/coverage-sonarqube.xml"
 
     - name: Upload coverage HTML report
       uses: actions/upload-artifact@v4
@@ -194,9 +193,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: coverage-data
-        path: |
-          build/coverage-reports/
-          build/coverage_filtered.info
+        path: build/coverage-sonarqube.xml
         retention-days: 2
 
   sonarqube:
