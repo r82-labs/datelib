@@ -22,7 +22,7 @@ target_include_directories(test_datelib PRIVATE
   ${CMAKE_SOURCE_DIR}/include
 )
 
-# Use Catch2's test discovery (CMake 3.31+ feature)
+# Use Catch2's test discovery for better CTest integration
 include(CTest)
 include(Catch)
 catch_discover_tests(test_datelib)
