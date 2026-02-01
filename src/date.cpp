@@ -267,18 +267,10 @@ int dayCount(const std::chrono::year_month_day& start, const std::chrono::year_m
 
     using enum DayCountConvention;
     switch (convention) {
-    case ActualActual: {
-        // Actual/Actual: exact difference in calendar days
-        auto start_days = std::chrono::sys_days{start};
-        auto end_days = std::chrono::sys_days{end};
-        auto diff = end_days - start_days;
-        return diff.count();
-    }
-
+    case ActualActual:
     case ActualActualISDA: {
-        // Actual/Actual ISDA: exact difference in calendar days
-        // For raw day count, same as ActualActual
-        // The ISDA variant differs in year fraction calculations (uses 366 for leap years, 365 otherwise)
+        // Actual/Actual and Actual/Actual ISDA: exact difference in calendar days
+        // Both return the same raw day count; ISDA differs in year fraction calculations
         auto start_days = std::chrono::sys_days{start};
         auto end_days = std::chrono::sys_days{end};
         auto diff = end_days - start_days;

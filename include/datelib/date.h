@@ -56,8 +56,9 @@ enum class DayCountConvention {
 
     /**
      * @brief Actual/Actual ISDA: Exact difference in calendar days
-     * Uses 366-day denominator in leap years, 365-day denominator otherwise.
-     * Most accurate convention; prevents "interest distortion" in leap years.
+     * For raw day count, returns the same value as ActualActual.
+     * The ISDA distinction (366-day denominator in leap years, 365-day otherwise)
+     * will be used in future year fraction calculations to prevent "interest distortion".
      */
     ActualActualISDA,
 
