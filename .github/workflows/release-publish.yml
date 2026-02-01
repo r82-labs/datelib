@@ -194,7 +194,8 @@ jobs:
     steps:
     - name: Trigger documentation generation on default branch
       run: |
-        BRANCH="${{ github.event.pull_request.base.ref }}"
+        # Use the PR base branch, with fallback to 'main' if not in PR context
+        BRANCH="${{ github.event.pull_request.base.ref || 'main' }}"
         echo "Triggering documentation generation workflow on branch: $BRANCH"
         if ! curl -fsSL -X POST \
           -H "Accept: application/vnd.github+json" \
