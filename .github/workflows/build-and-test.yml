@@ -140,7 +140,14 @@ jobs:
         cd coverage-reports
         # Run gcov for each object file with --preserve-paths to avoid name clashes
         # This generates .gcov files that SonarQube can read
-        find .. -name '*.o' -exec gcov --preserve-paths {} \;
+        # We search the parent directory (build/) for all .o files
+        find .. -name '*.o' -exec gcov --preserve-paths {} \; 2>&1 | grep -E "^(File|Creating|Lines)" || true
+        # Verify .gcov files were created
+        GCOV_COUNT=$(find . -name "*.gcov" | wc -l)
+        echo "Generated $GCOV_COUNT .gcov files for SonarQube"
+        if [ "$GCOV_COUNT" -eq 0 ]; then
+          echo "WARNING: No .gcov files were generated. SonarQube may not show coverage."
+        fi
         cd ..
 
     - name: Upload coverage HTML report
