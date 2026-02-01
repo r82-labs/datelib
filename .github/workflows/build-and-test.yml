@@ -100,10 +100,11 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Install lcov
+    - name: Install lcov and gcovr
       run: |
         sudo apt-get update
         sudo apt-get install -y lcov
+        pip install gcovr
 
     - name: Download test artifacts
       uses: actions/download-artifact@v4
@@ -133,6 +134,20 @@ jobs:
 
         # Generate HTML report
         genhtml coverage_filtered.info --output-directory coverage_html --title "datelib Coverage Report" --legend
+
+        # Go back to project root to generate SonarQube coverage report
+        cd ..
+
+        # Generate SonarQube-compatible XML coverage report using gcovr
+        # This generates relative paths that match sonar.sources configuration
+        gcovr --sonarqube -o build/coverage-sonarqube.xml --root . build/
+        
+        # Verify SonarQube coverage file was created
+        if [ ! -s build/coverage-sonarqube.xml ]; then
+          echo "ERROR: SonarQube coverage XML was not generated"
+          exit 1
+        fi
+        echo "Generated SonarQube coverage report at build/coverage-sonarqube.xml"
 
     - name: Upload coverage HTML report
       uses: actions/upload-artifact@v4
@@ -178,7 +193,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: coverage-data
-        path: build/coverage_filtered.info
+        path: build/coverage-sonarqube.xml
         retention-days: 2
 
   sonarqube:
@@ -211,7 +226,7 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: coverage-data
-        path: build/
+        path: .
 
     - name: Configure CMake with build wrapper
       run: |

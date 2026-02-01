@@ -64,3 +64,6 @@ _codeql_detected_source_root
 
 # Generated documentation
 docs/
+coverage_sonar.xml
+coverage-sonarqube.xml
+coverage_clean.xml
