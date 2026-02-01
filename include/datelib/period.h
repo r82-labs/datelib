@@ -42,7 +42,7 @@ class Period {
      * - "nM" or "nm" for n months
      * - "nY" or "ny" for n years
      */
-    [[nodiscard]] static Period parse(const std::string& period_str);
+    [[nodiscard]] static Period parse(std::string_view period_str);
 
     /**
      * @brief Get the numeric value of the period

@@ -76,7 +76,7 @@ Period::Unit parseUnit(std::string_view period_str, size_t unit_index) {
 }
 } // namespace
 
-Period Period::parse(const std::string& period_str) {
+Period Period::parse(std::string_view period_str) {
     auto [numeric_end, has_sign] = validateAndFindNumericEnd(period_str);
     int value = parseNumericValue(period_str, numeric_end);
     Unit unit = parseUnit(period_str, numeric_end);

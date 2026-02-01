@@ -626,9 +626,11 @@ TEST_CASE("Period::parse with valid strings", "[period]") {
     SECTION("Large values") {
         auto period = datelib::Period::parse("365D");
         REQUIRE(period.value() == 365);
+        REQUIRE(period.unit() == datelib::Period::Unit::Days);
 
         period = datelib::Period::parse("100Y");
         REQUIRE(period.value() == 100);
+        REQUIRE(period.unit() == datelib::Period::Unit::Years);
     }
 }
 

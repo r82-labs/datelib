@@ -248,8 +248,8 @@ std::chrono::year_month_day
 advance(const std::chrono::year_month_day& date, std::string_view period,
         BusinessDayConvention convention, const HolidayCalendar& calendar,
         const std::unordered_set<std::chrono::weekday, WeekdayHash>& weekend_days) {
-    // Parse the period string (converts string_view to string for Period::parse)
-    Period parsed_period = Period::parse(std::string(period));
+    // Parse the period string
+    Period parsed_period = Period::parse(period);
 
     // Call the Period-based overload
     return advance(date, parsed_period, convention, calendar, weekend_days);
