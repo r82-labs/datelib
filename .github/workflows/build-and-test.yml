@@ -134,6 +134,15 @@ jobs:
         # Generate HTML report
         genhtml coverage_filtered.info --output-directory coverage_html --title "datelib Coverage Report" --legend
 
+        # Generate .gcov files for SonarQube
+        # SonarQube C/C++ analyzer requires .gcov files, not LCOV format
+        mkdir -p coverage-reports
+        cd coverage-reports
+        # Run gcov for each object file with --preserve-paths to avoid name clashes
+        # This generates .gcov files that SonarQube can read
+        find .. -name '*.o' -exec gcov --preserve-paths {} \;
+        cd ..
+
     - name: Upload coverage HTML report
       uses: actions/upload-artifact@v4
       with:
@@ -178,7 +187,9 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: coverage-data
-        path: build/coverage_filtered.info
+        path: |
+          build/coverage-reports/
+          build/coverage_filtered.info
         retention-days: 2
 
   sonarqube:
