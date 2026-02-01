@@ -24,7 +24,7 @@ constexpr unsigned MAX_MONTH = 12;
 constexpr unsigned MIN_DAY = 1;
 constexpr unsigned MAX_DAY = 31;
 constexpr unsigned MAX_WEEKDAY = 6;
-constexpr int DAYS_PER_WEEK = 7;
+constexpr unsigned DAYS_PER_WEEK = 7;
 } // namespace
 
 // ExplicitDateRule implementation
@@ -107,15 +107,20 @@ bool NthWeekdayRule::appliesTo(const int year) const {
     const sys_days first_sd{first_of_month};
     const weekday first_weekday{first_sd};
 
-    const int days_until_target =
-        (weekday_.c_encoding() - first_weekday.c_encoding() + DAYS_PER_WEEK) % DAYS_PER_WEEK;
-    const sys_days target_sd = first_sd + days{days_until_target + (occ_val - 1) * DAYS_PER_WEEK};
+    const unsigned weekday_encoding = weekday_.c_encoding();
+    const unsigned first_weekday_encoding = first_weekday.c_encoding();
+    const unsigned days_until_target =
+        (weekday_encoding + DAYS_PER_WEEK - first_weekday_encoding) % DAYS_PER_WEEK;
+    const auto occ_val_u = static_cast<unsigned>(occ_val);
+    const auto offset_days =
+        static_cast<days::rep>(days_until_target + (occ_val_u - 1U) * DAYS_PER_WEEK);
+    const sys_days target_sd = first_sd + days{offset_days};
     const year_month_day result{target_sd};
 
     return result.month() == month_;
 }
 
-year_month_day NthWeekdayRule::calculateDate(int year) const {
+year_month_day NthWeekdayRule::calculateDate(const int year) const {
     // Get the first day of the month
     const year_month_day first_of_month{std::chrono::year{year}, month_, day{1}};
 
@@ -126,11 +131,16 @@ year_month_day NthWeekdayRule::calculateDate(int year) const {
     if (const int occ_val = std::to_underlying(occurrence_); occ_val > 0) {
         // Find the Nth occurrence of the target weekday
         // Calculate days to add to reach first occurrence of target weekday
-        const int days_until_target =
-            (weekday_.c_encoding() - first_weekday.c_encoding() + DAYS_PER_WEEK) % DAYS_PER_WEEK;
+        const unsigned weekday_encoding = weekday_.c_encoding();
+        const unsigned first_weekday_encoding = first_weekday.c_encoding();
+        const unsigned days_until_target =
+            (weekday_encoding + DAYS_PER_WEEK - first_weekday_encoding) % DAYS_PER_WEEK;
 
         // Add weeks to get to the Nth occurrence
-        const sys_days target_sd = first_sd + days{days_until_target + (occ_val - 1) * DAYS_PER_WEEK};
+        const auto occ_val_u = static_cast<unsigned>(occ_val);
+        const auto offset_days =
+            static_cast<days::rep>(days_until_target + (occ_val_u - 1U) * DAYS_PER_WEEK);
+        const sys_days target_sd = first_sd + days{offset_days};
         const year_month_day result{target_sd};
 
         // Verify we're still in the same month
@@ -149,10 +159,12 @@ year_month_day NthWeekdayRule::calculateDate(int year) const {
         const weekday last_weekday{last_sd};
 
         // Calculate days to subtract to get to last occurrence of target weekday
-        const int days_to_subtract =
-            (last_weekday.c_encoding() - weekday_.c_encoding() + DAYS_PER_WEEK) % DAYS_PER_WEEK;
+        const unsigned last_weekday_encoding = last_weekday.c_encoding();
+        const unsigned weekday_encoding = weekday_.c_encoding();
+        const unsigned days_to_subtract =
+            (last_weekday_encoding + DAYS_PER_WEEK - weekday_encoding) % DAYS_PER_WEEK;
 
-        const sys_days target_sd = last_sd - days{days_to_subtract};
+        const sys_days target_sd = last_sd - days{static_cast<days::rep>(days_to_subtract)};
         const year_month_day result{target_sd};
 
         return result;
