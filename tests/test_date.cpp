@@ -683,6 +683,12 @@ TEST_CASE("Period::parse with invalid strings", "[period][edge_cases]") {
         REQUIRE_THROWS_WITH(datelib::Period::parse("5.5D"),
                             "Period string must end with a single unit character (D/W/M/Y): 5.5D");
     }
+
+    SECTION("Numeric overflow") {
+        // Test with a number too large to fit in an int (causes std::stoi to throw)
+        REQUIRE_THROWS_WITH(datelib::Period::parse("999999999999999999999D"),
+                            "Invalid numeric value in period string: 999999999999999999999D");
+    }
 }
 
 TEST_CASE("Period construction and use with advance", "[period][advance]") {
