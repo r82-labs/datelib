@@ -28,7 +28,7 @@ class Period {
      * @param value The number of units
      * @param unit The time unit
      */
-    Period(int value, Unit unit) : value_(value), unit_(unit) {}
+    Period(int value, Unit unit);
 
     /**
      * @brief Parse a period from a string (e.g., "2W", "6M", "10Y")

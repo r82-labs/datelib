@@ -7,6 +7,8 @@
 
 namespace datelib {
 
+Period::Period(int value, Unit unit) : value_(value), unit_(unit) {}
+
 namespace {
 // Helper function to validate period string format and find numeric portion
 std::pair<size_t, bool> validateAndFindNumericEnd(std::string_view period_str) {

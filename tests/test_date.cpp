@@ -685,6 +685,23 @@ TEST_CASE("Period::parse with invalid strings", "[period][edge_cases]") {
     }
 }
 
+TEST_CASE("Period construction and use with advance", "[period][advance]") {
+    datelib::HolidayCalendar calendar;
+
+    SECTION("Construct Period directly and use with advance") {
+        // Create a Period object directly using the constructor
+        datelib::Period period(3, datelib::Period::Unit::Months);
+        REQUIRE(period.value() == 3);
+        REQUIRE(period.unit() == datelib::Period::Unit::Months);
+
+        // Use the Period object with advance
+        auto date = year_month_day{year{2024}, month{1}, day{15}};
+        auto result =
+            datelib::advance(date, period, datelib::BusinessDayConvention::Following, calendar);
+        REQUIRE(result == year_month_day{year{2024}, month{4}, day{15}});
+    }
+}
+
 TEST_CASE("advance with days period", "[advance]") {
     datelib::HolidayCalendar calendar;
 
@@ -873,6 +890,14 @@ TEST_CASE("advance with negative periods", "[advance]") {
         auto result =
             datelib::advance(date, "-1M", datelib::BusinessDayConvention::Following, calendar);
         REQUIRE(result == year_month_day{year{2024}, month{1}, day{15}});
+    }
+
+    SECTION("Advance by -13 months (cross year boundary)") {
+        // February 15, 2024 - 13M = January 15, 2023 (Sunday, adjusts to Monday Jan 16)
+        auto date = year_month_day{year{2024}, month{2}, day{15}};
+        auto result =
+            datelib::advance(date, "-13M", datelib::BusinessDayConvention::Following, calendar);
+        REQUIRE(result == year_month_day{year{2023}, month{1}, day{16}});
     }
 
     SECTION("Advance by -1 year") {
