@@ -106,7 +106,7 @@ MonthsAdvancer::advance(const std::chrono::year_month_day& date, int value,
         // Day is invalid for this month, use last day of month
         result_date = std::chrono::year_month_day{new_year / new_month / std::chrono::last};
     }
-    
+
     return result_date;
 }
 
@@ -128,7 +128,7 @@ YearsAdvancer::advance(const std::chrono::year_month_day& date, int value,
         // Day is invalid for this year/month (e.g., Feb 29 in non-leap year)
         result_date = std::chrono::year_month_day{new_year / m / std::chrono::last};
     }
-    
+
     return result_date;
 }
 
