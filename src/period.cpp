@@ -51,18 +51,19 @@ Period Period::parse(const std::string& period_str) {
     char unit_char = std::toupper(period_str[numeric_end]);
     Unit unit;
 
+    using enum Unit;
     switch (unit_char) {
     case 'D':
-        unit = Unit::Days;
+        unit = Days;
         break;
     case 'W':
-        unit = Unit::Weeks;
+        unit = Weeks;
         break;
     case 'M':
-        unit = Unit::Months;
+        unit = Months;
         break;
     case 'Y':
-        unit = Unit::Years;
+        unit = Years;
         break;
     default:
         throw std::invalid_argument(

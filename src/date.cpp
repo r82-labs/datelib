@@ -1,8 +1,8 @@
 #include "datelib/date.h"
 
 #include "datelib/HolidayCalendar.h"
-#include "datelib/period.h"
 #include "datelib/exceptions.h"
+#include "datelib/period.h"
 
 namespace datelib {
 
