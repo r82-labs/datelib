@@ -1,7 +1,35 @@
-# CODEOWNERS file
-# This file defines individuals or teams that are responsible for code in this repository.
-# When enabled with branch protection rules, code owners are automatically requested for review.
+# CODEOWNERS file for datelib
+# This file defines code ownership for different parts of the repository
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 
-# Default owners for everything in the repo
-# At least 1 review from code owners is required before merging to main
-* @r82labs
+# Default owner for everything in the repository
+* @r82labs-ronan
+
+# Root level files
+/.clang-format @r82labs-ronan
+/.gitignore @r82labs-ronan
+/.pre-commit-config.yaml @r82labs-ronan
+/CMakeLists.txt @r82labs-ronan
+/Doxyfile @r82labs-ronan
+/LICENSE @r82labs-ronan
+/README.md @r82labs-ronan
+/AGENTS.md @r82labs-ronan
+/sonar-project.properties @r82labs-ronan
+
+# GitHub configuration and workflows
+/.github/ @r82labs-ronan
+/.github/workflows/ @r82labs-ronan
+/.github/agents/ @r82labs-ronan
+
+# CMake modules and configuration
+/cmake/ @r82labs-ronan
+
+# Public header files (library API)
+/include/ @r82labs-ronan
+/include/datelib/ @r82labs-ronan
+
+# Source code implementation
+/src/ @r82labs-ronan
+
+# Test files and test infrastructure
+/tests/ @r82labs-ronan
