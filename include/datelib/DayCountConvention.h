@@ -161,7 +161,7 @@ class Actual365Fixed : public DayCountConvention {
 };
 
 /**
- * @brief 30/360 (Bond Basis, US) day count convention
+ * @brief 30/360 (Bond Basis) day count convention
  *
  * This convention assumes 30 days in each month and 360 days in a year.
  * Commonly used in US corporate and municipal bonds.

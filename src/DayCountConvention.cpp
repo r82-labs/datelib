@@ -73,10 +73,10 @@ double ActualActual::yearFraction(const std::chrono::year_month_day& start_date,
     // For multi-year periods, calculate fraction for each year
     double fraction = 0.0;
 
-    // First partial year: from start_date to end of year
-    const std::chrono::year_month_day year_end{start_year, std::chrono::December,
-                                               std::chrono::day{31}};
-    const int days_in_first_year = actual_days(start_date, year_end) + 1; // include Dec 31
+    // First partial year: from start_date to end of year (Jan 1 of next year)
+    const std::chrono::year_month_day next_year_start{start_year + std::chrono::years{1},
+                                                      std::chrono::January, std::chrono::day{1}};
+    const int days_in_first_year = actual_days(start_date, next_year_start);
     fraction +=
         static_cast<double>(days_in_first_year) / static_cast<double>(days_in_year(start_year));
 
