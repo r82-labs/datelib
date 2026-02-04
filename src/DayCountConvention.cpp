@@ -176,10 +176,12 @@ int Thirty360::dayCount(const std::chrono::year_month_day& start_date,
     int y2 = static_cast<int>(end_date.year());
 
     // Apply 30/360 US (Bond Basis) adjustment rules
+    // Save original d1 value to check for the second rule
+    const int original_d1 = d1;
     if (d1 == 31) {
         d1 = 30;
     }
-    if (d2 == 31 && (d1 == 30 || d1 == 31)) {
+    if (d2 == 31 && (original_d1 == 30 || original_d1 == 31)) {
         d2 = 30;
     }
 
