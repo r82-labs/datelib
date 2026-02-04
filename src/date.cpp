@@ -255,4 +255,70 @@ advance(const std::chrono::year_month_day& date, std::string_view period,
     return advance(date, parsed_period, convention, calendar, weekend_days);
 }
 
+int diff(const std::chrono::year_month_day& start_date,
+         const std::chrono::year_month_day& end_date) {
+    // Validate both dates
+    if (!start_date.ok()) {
+        throw std::invalid_argument("Invalid start_date provided to diff");
+    }
+    if (!end_date.ok()) {
+        throw std::invalid_argument("Invalid end_date provided to diff");
+    }
+
+    // Convert to sys_days for arithmetic
+    auto start_sys = std::chrono::sys_days{start_date};
+    auto end_sys = std::chrono::sys_days{end_date};
+
+    // Calculate the difference in days
+    auto duration = end_sys - start_sys;
+    return static_cast<int>(duration.count());
+}
+
+int businessDaysDiff(const std::chrono::year_month_day& start_date,
+                     const std::chrono::year_month_day& end_date,
+                     const HolidayCalendar& calendar,
+                     const std::unordered_set<std::chrono::weekday, WeekdayHash>& weekend_days) {
+    // Validate both dates
+    if (!start_date.ok()) {
+        throw std::invalid_argument("Invalid start_date provided to businessDaysDiff");
+    }
+    if (!end_date.ok()) {
+        throw std::invalid_argument("Invalid end_date provided to businessDaysDiff");
+    }
+
+    // If the dates are the same, return 0
+    if (start_date == end_date) {
+        return 0;
+    }
+
+    // Determine direction
+    bool forward = end_date > start_date;
+    auto current_date = start_date;
+    auto target_date = end_date;
+
+    // Swap if going backward
+    if (!forward) {
+        std::swap(current_date, target_date);
+    }
+
+    // Count business days from start to end (exclusive of start, inclusive of end)
+    // This means we count all business days between the two dates, not including the start date
+    int business_days = 0;
+    auto current_sys = std::chrono::sys_days{current_date};
+    auto target_sys = std::chrono::sys_days{target_date};
+
+    // Move one day at a time and count business days
+    while (current_sys < target_sys) {
+        current_sys += std::chrono::days{1};
+        std::chrono::year_month_day current_ymd{current_sys};
+
+        if (isBusinessDay(current_ymd, calendar, weekend_days)) {
+            business_days++;
+        }
+    }
+
+    // Return negative count if we were going backward
+    return forward ? business_days : -business_days;
+}
+
 } // namespace datelib

@@ -1009,3 +1009,142 @@ TEST_CASE("advance real-world scenarios", "[advance]") {
         REQUIRE(maturity == year_month_day{year{2034}, month{1}, day{2}});
     }
 }
+
+TEST_CASE("diff - calendar days", "[diff]") {
+    SECTION("Same date returns 0") {
+        auto date = year_month_day{year{2024}, month{1}, day{15}};
+        REQUIRE(datelib::diff(date, date) == 0);
+    }
+
+    SECTION("Positive difference - days apart") {
+        auto start = year_month_day{year{2024}, month{1}, day{1}};
+        auto end = year_month_day{year{2024}, month{1}, day{10}};
+        REQUIRE(datelib::diff(start, end) == 9);
+    }
+
+    SECTION("Negative difference - end before start") {
+        auto start = year_month_day{year{2024}, month{1}, day{10}};
+        auto end = year_month_day{year{2024}, month{1}, day{1}};
+        REQUIRE(datelib::diff(start, end) == -9);
+    }
+
+    SECTION("Difference across months") {
+        auto start = year_month_day{year{2024}, month{1}, day{25}};
+        auto end = year_month_day{year{2024}, month{2}, day{5}};
+        REQUIRE(datelib::diff(start, end) == 11);
+    }
+
+    SECTION("Difference across years") {
+        auto start = year_month_day{year{2023}, month{12}, day{25}};
+        auto end = year_month_day{year{2024}, month{1}, day{5}};
+        REQUIRE(datelib::diff(start, end) == 11);
+    }
+
+    SECTION("Difference spanning leap year") {
+        auto start = year_month_day{year{2024}, month{2}, day{28}};
+        auto end = year_month_day{year{2024}, month{3}, day{1}};
+        // 2024 is a leap year, so Feb has 29 days
+        REQUIRE(datelib::diff(start, end) == 2);
+    }
+
+    SECTION("One year difference") {
+        auto start = year_month_day{year{2024}, month{1}, day{1}};
+        auto end = year_month_day{year{2025}, month{1}, day{1}};
+        // 2024 is a leap year (366 days)
+        REQUIRE(datelib::diff(start, end) == 366);
+    }
+
+    SECTION("Invalid start date throws exception") {
+        auto invalid_start = year_month_day{year{2024}, month{2}, day{30}};
+        auto valid_end = year_month_day{year{2024}, month{3}, day{1}};
+        REQUIRE_THROWS_AS(datelib::diff(invalid_start, valid_end), std::invalid_argument);
+    }
+
+    SECTION("Invalid end date throws exception") {
+        auto valid_start = year_month_day{year{2024}, month{1}, day{1}};
+        auto invalid_end = year_month_day{year{2024}, month{13}, day{1}};
+        REQUIRE_THROWS_AS(datelib::diff(valid_start, invalid_end), std::invalid_argument);
+    }
+}
+
+TEST_CASE("businessDaysDiff - business days", "[businessDaysDiff]") {
+    datelib::HolidayCalendar emptyCalendar;
+
+    SECTION("Same date returns 0") {
+        auto date = year_month_day{year{2024}, month{1}, day{15}};
+        REQUIRE(datelib::businessDaysDiff(date, date, emptyCalendar) == 0);
+    }
+
+    SECTION("Consecutive weekdays") {
+        // Monday to Friday (same week)
+        auto monday = year_month_day{year{2024}, month{1}, day{1}};
+        auto friday = year_month_day{year{2024}, month{1}, day{5}};
+        REQUIRE(datelib::businessDaysDiff(monday, friday, emptyCalendar) == 4);
+    }
+
+    SECTION("Negative difference - end before start") {
+        auto friday = year_month_day{year{2024}, month{1}, day{5}};
+        auto monday = year_month_day{year{2024}, month{1}, day{1}};
+        REQUIRE(datelib::businessDaysDiff(friday, monday, emptyCalendar) == -4);
+    }
+
+    SECTION("Across weekend") {
+        // Friday to next Monday (skipping weekend)
+        auto friday = year_month_day{year{2024}, month{1}, day{5}};
+        auto next_monday = year_month_day{year{2024}, month{1}, day{8}};
+        REQUIRE(datelib::businessDaysDiff(friday, next_monday, emptyCalendar) == 1);
+    }
+
+    SECTION("Full week (Monday to Monday)") {
+        auto monday1 = year_month_day{year{2024}, month{1}, day{1}};
+        auto monday2 = year_month_day{year{2024}, month{1}, day{8}};
+        // 5 business days in a week
+        REQUIRE(datelib::businessDaysDiff(monday1, monday2, emptyCalendar) == 5);
+    }
+
+    SECTION("With holidays") {
+        datelib::HolidayCalendar calendar;
+        calendar.addRule(std::make_unique<datelib::FixedDateRule>("New Year's Day", 1, 1));
+
+        // Monday Jan 1 (holiday) to Friday Jan 5
+        // Counting business days: Jan 2 (Tue), Jan 3 (Wed), Jan 4 (Thu), Jan 5 (Fri) = 4 days
+        auto monday = year_month_day{year{2024}, month{1}, day{1}};
+        auto friday = year_month_day{year{2024}, month{1}, day{5}};
+        REQUIRE(datelib::businessDaysDiff(monday, friday, calendar) == 4);
+    }
+
+    SECTION("Weekend start and end") {
+        // Saturday to Sunday (no business days)
+        auto saturday = year_month_day{year{2024}, month{1}, day{6}};
+        auto sunday = year_month_day{year{2024}, month{1}, day{7}};
+        REQUIRE(datelib::businessDaysDiff(saturday, sunday, emptyCalendar) == 0);
+    }
+
+    SECTION("Invalid start date throws exception") {
+        auto invalid_start = year_month_day{year{2024}, month{2}, day{30}};
+        auto valid_end = year_month_day{year{2024}, month{3}, day{1}};
+        REQUIRE_THROWS_AS(datelib::businessDaysDiff(invalid_start, valid_end, emptyCalendar),
+                          std::invalid_argument);
+    }
+
+    SECTION("Invalid end date throws exception") {
+        auto valid_start = year_month_day{year{2024}, month{1}, day{1}};
+        auto invalid_end = year_month_day{year{2024}, month{13}, day{1}};
+        REQUIRE_THROWS_AS(datelib::businessDaysDiff(valid_start, invalid_end, emptyCalendar),
+                          std::invalid_argument);
+    }
+
+    SECTION("Custom weekend days") {
+        // Use Friday-Saturday as weekend (like some Middle Eastern countries)
+        std::unordered_set<std::chrono::weekday, datelib::WeekdayHash> custom_weekend = {
+            std::chrono::Friday, std::chrono::Saturday};
+
+        // Thursday Jan 4 to Sunday Jan 7 (skipping Friday-Saturday weekend)
+        // Counting business days: Sunday (Jan 7) = 1 business day
+        // (Jan 4 is start, not counted; Jan 5-6 are weekend; Jan 7 is Sunday - a business day)
+        auto thursday = year_month_day{year{2024}, month{1}, day{4}};
+        auto sunday = year_month_day{year{2024}, month{1}, day{7}};
+        REQUIRE(datelib::businessDaysDiff(thursday, sunday, emptyCalendar, custom_weekend) == 1);
+    }
+}
+

@@ -128,4 +128,49 @@ advance(const std::chrono::year_month_day& date, const Period& period,
         const std::unordered_set<std::chrono::weekday, WeekdayHash>& weekend_days = {
             std::chrono::Saturday, std::chrono::Sunday});
 
+/**
+ * @brief Calculate the difference in calendar days between two dates
+ * @param start_date The start date
+ * @param end_date The end date
+ * @return The number of calendar days from start_date to end_date (positive if end_date is after
+ * start_date, negative otherwise)
+ * @throws std::invalid_argument if either date is invalid
+ *
+ * This function calculates the difference in calendar days between two dates.
+ * The result is positive if end_date is after start_date, negative if before,
+ * and zero if the dates are the same.
+ *
+ * Examples:
+ * - diff(2024-01-01, 2024-01-10) -> 9 (9 days difference)
+ * - diff(2024-01-10, 2024-01-01) -> -9 (negative difference)
+ * - diff(2024-01-01, 2024-01-01) -> 0 (same date)
+ */
+[[nodiscard]] int diff(const std::chrono::year_month_day& start_date,
+                       const std::chrono::year_month_day& end_date);
+
+/**
+ * @brief Calculate the difference in business days between two dates
+ * @param start_date The start date
+ * @param end_date The end date
+ * @param calendar The holiday calendar to use for determining business days
+ * @param weekend_days The set of weekdays considered as weekend (defaults to Saturday and Sunday)
+ * @return The number of business days from start_date to end_date (positive if end_date is after
+ * start_date, negative otherwise)
+ * @throws std::invalid_argument if either date is invalid
+ *
+ * This function calculates the difference in business days (excluding weekends and holidays)
+ * between two dates. The result is positive if end_date is after start_date,
+ * negative if before, and zero if the dates are the same or within the same business day.
+ *
+ * Examples:
+ * - diff(2024-01-01 (Mon), 2024-01-05 (Fri), calendar) -> 4 business days
+ * - diff(2024-01-01 (Mon), 2024-01-08 (Mon), calendar) -> 5 business days (skipping weekend)
+ * - diff(2024-01-05 (Fri), 2024-01-01 (Mon), calendar) -> -4 business days
+ */
+[[nodiscard]] int businessDaysDiff(
+    const std::chrono::year_month_day& start_date, const std::chrono::year_month_day& end_date,
+    const HolidayCalendar& calendar,
+    const std::unordered_set<std::chrono::weekday, WeekdayHash>& weekend_days = {
+        std::chrono::Saturday, std::chrono::Sunday});
+
 } // namespace datelib
