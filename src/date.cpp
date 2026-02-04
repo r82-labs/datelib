@@ -301,7 +301,8 @@ int businessDaysDiff(const std::chrono::year_month_day& start_date,
         std::swap(current_date, target_date);
     }
 
-    // Count business days between start and end (exclusive of start, inclusive of end)
+    // Count business days from start to end (exclusive of start, inclusive of end)
+    // This means we count all business days between the two dates, not including the start date
     int business_days = 0;
     auto current_sys = std::chrono::sys_days{current_date};
     auto target_sys = std::chrono::sys_days{target_date};

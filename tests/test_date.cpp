@@ -1107,9 +1107,9 @@ TEST_CASE("businessDaysDiff - business days", "[businessDaysDiff]") {
         calendar.addRule(std::make_unique<datelib::FixedDateRule>("New Year's Day", 1, 1));
 
         // Monday Jan 1 (holiday) to Friday Jan 5
+        // Counting business days: Jan 2 (Tue), Jan 3 (Wed), Jan 4 (Thu), Jan 5 (Fri) = 4 days
         auto monday = year_month_day{year{2024}, month{1}, day{1}};
         auto friday = year_month_day{year{2024}, month{1}, day{5}};
-        // Jan 1 is a holiday, so only Jan 2, 3, 4, 5 are business days = 4 days
         REQUIRE(datelib::businessDaysDiff(monday, friday, calendar) == 4);
     }
 
@@ -1139,10 +1139,11 @@ TEST_CASE("businessDaysDiff - business days", "[businessDaysDiff]") {
         std::unordered_set<std::chrono::weekday, datelib::WeekdayHash> custom_weekend = {
             std::chrono::Friday, std::chrono::Saturday};
 
-        // Thursday to Sunday (skipping Friday-Saturday weekend)
+        // Thursday Jan 4 to Sunday Jan 7 (skipping Friday-Saturday weekend)
+        // Counting business days: Sunday (Jan 7) = 1 business day
+        // (Jan 4 is start, not counted; Jan 5-6 are weekend; Jan 7 is Sunday - a business day)
         auto thursday = year_month_day{year{2024}, month{1}, day{4}};
         auto sunday = year_month_day{year{2024}, month{1}, day{7}};
-        // Business days: Sunday (Jan 7) = 1 business day
         REQUIRE(datelib::businessDaysDiff(thursday, sunday, emptyCalendar, custom_weekend) == 1);
     }
 }
