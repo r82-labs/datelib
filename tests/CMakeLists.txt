@@ -3,6 +3,7 @@ add_executable(test_datelib
   test_date.cpp 
   test_HolidayRule.cpp
   test_HolidayCalendar.cpp
+  test_DayCountConvention.cpp
 )
 
 # Link libraries (Catch2 v3 uses Catch2::Catch2WithMain)
